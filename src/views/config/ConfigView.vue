@@ -62,7 +62,7 @@ watch(notification, (newNotification) => {
           rounded-full
           small
         /> -->
-        <BaseButton :icon="mdiPlus" label="Create Config" color="primary" @click="createConfig" />
+        <BaseButton v-if="!configStore.config.length > 0" :icon="mdiPlus" label="Create Config" color="primary" @click="createConfig" />
 
       </SectionTitleLineWithButton>
       <NotificationBar v-if="notification" :color="notification.type" @close="configStore.resetNotification()">

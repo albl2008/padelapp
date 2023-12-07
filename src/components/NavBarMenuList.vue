@@ -5,6 +5,7 @@
   import { logout } from '@/api/auth';
   import { setLastVisitedURL } from '@/api/interceptor';
   import { ref } from 'vue'
+  import { useDarkModeStore } from '@/stores/darkMode';
 
   defineProps({
     menu: {
@@ -12,6 +13,8 @@
       default: () => []
     }
   })
+
+  const darkModeStore = useDarkModeStore()
 
   const router = useRouter()
 
@@ -39,18 +42,20 @@
     }
   }
 
-  const flag = ref(false)
+  let flag = ref(false)
 
   const emit = defineEmits(['menu-click'])
 
   const menuClick = async (event, item) => {
-  console.log('Navbar: Menu click event received:', event, item);
   emit('menu-click', event, item);
+  
   if (item.isLogout && !flag) {
     flag = true
-    console.log('Navbar: Initiating logout...');
     await performLogout();
-    console.log('Navbar: Logout completed.');
+  }
+
+  if (item.isToggleLightDark){
+    darkModeStore.set()
   }
 }
   </script>

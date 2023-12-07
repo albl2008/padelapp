@@ -152,8 +152,7 @@ const checked = (isChecked, config) => {
         {{ config.tolerance }}
       </td>
       <td data-label="First Shift">
-        {{ config.firstShift
-         }}
+        {{ new Date(config.firstShift).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'}) }}
       </td>
       <td data-label="Shifts per day">
         {{ config.shiftsPerDay }}

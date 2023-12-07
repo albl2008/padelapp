@@ -15,6 +15,8 @@ import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.
 import { createConfig, getConfigById, updateConfig } from '@/api/config'
 import router from '@/router'
 import { useConfigStore } from '@/stores/config';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
 
 
 const configStore = useConfigStore();
@@ -32,11 +34,18 @@ const isEditMode = ref(false);
 
 const submit = async () => {
   try {
+    debugger
+    const currentDate = new Date();
+
+      // Set the hours, minutes, and seconds based on the given object
+    currentDate.setUTCHours(form.firstShift.hours);
+    currentDate.setUTCMinutes(form.firstShift.minutes);
+    currentDate.setUTCSeconds(0);
     const config = {
       shiftDuration: form.shiftDuration,
       shiftPrice: form.shiftPrice,
       tolerance: form.tolerance,
-      firstShift: form.firstShift,
+      firstShift: currentDate,
       shiftsPerDay: form.shiftsPerDay
     }
     if (isEditMode.value) {
@@ -72,10 +81,15 @@ onMounted(async () => {
     // Fetch config details based on the id and populate the form
     try {
       const configDetails = await getConfigById(configId);
+      const firstShift = new Date(configDetails.data.firstShift)
+      
+      const minutes = firstShift.getUTCMinutes()
+      const hours = firstShift.getUTCHours()
+      
       form.shiftDuration = configDetails.data.shiftDuration;
       form.shiftPrice = configDetails.data.shiftPrice;
       form.tolerance = configDetails.data.tolerance;
-      form.firstShift = configDetails.data.firstShift;
+      form.firstShift = {hours:hours, minutes:minutes}
       form.shiftsPerDay = configDetails.data.shiftsPerDay;
       //form.inUse = configDetails.data.inUse;
     } catch (error) {
@@ -131,7 +145,7 @@ onMounted(async () => {
         </FormField>
 
         <FormField label="Primer Turno" >
-          <FormControl v-model="form.firstShift"  />
+          <VueDatePicker v-model="form.firstShift" time-picker :action-row="{ showNow: false, showPreview: false, showSelect: true}"></VueDatePicker>
         </FormField>
         <BaseDivider />
         <!-- <FormField label="Duracion Turno">
