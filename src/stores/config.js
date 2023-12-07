@@ -20,6 +20,13 @@ export const useConfigStore = defineStore({
       this.config = config;
     },
 
+    getConfig() {
+      if (this.config){
+        return this.config
+      }
+     
+    },
+
     setNotification({ message, type }) {
       
       this.notification = { message, type };
