@@ -111,6 +111,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Editar Turno'
+    },
+    path: '/edit-shift/:idShift', 
+    name: 'edit-shift',
+    component: () => import('@/views/shifts/EditShiftView.vue')
+  },
+  {
+    meta: {
       title: 'Editar Configuracion'
     },
     path: '/edit-config/:idConfig', 
