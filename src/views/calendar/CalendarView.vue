@@ -169,7 +169,7 @@ const confirmEdit = (shift) => {
     <LayoutAuthenticated>
       <SectionMain>
         <h1>Turnos</h1>
-        <NotificationBar v-if="notification" :color="notification.type" @close="configStore.resetNotification()">
+        <NotificationBar v-if="notification" :color="notification.type" @close="shiftsStore.resetNotification()">
         <b>{{ notification.message }}</b>
       </NotificationBar>
         <BaseButtons>

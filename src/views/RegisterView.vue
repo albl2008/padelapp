@@ -23,9 +23,9 @@ const router = useRouter()
 const submit = async() => {
     try {
           const response = await axios.post('http://localhost:3000/v1/auth/register', {
-            name: "Alvaro",
-            email: "alvaroblanco10@gmail.com",
-            password: "101201230a",
+            name: form.name,
+            email: form.email,
+            password: form.password,
           });
   
           // Handle the response as needed

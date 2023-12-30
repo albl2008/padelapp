@@ -5,7 +5,7 @@ const CONFIG_URL = `http://localhost:3000/v1/auth`; // Adjust the base URL accor
 
 
 // export const getAllConfig = () => axios.get(CONFIG_URL);
-// export const getConfigById = (configId) => axios.get(`${CONFIG_URL}/${configId}`);
+export const forgotPassword = (email) => axios.post(`${CONFIG_URL}/forgot-password`, email);
 export const login = (loginData) => axios.post(`${CONFIG_URL}/login`, loginData);
 export const logout = (refreshToken) => axios.post(`${CONFIG_URL}/logout`, refreshToken);
 // export const deleteConfig = (configId) => axios.delete(`${CONFIG_URL}/${configId}`);

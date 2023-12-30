@@ -1,6 +1,6 @@
 // auth.js in stores folder
 import { defineStore } from 'pinia';
-import { login as apiLogin, logout as apiLogout } from '@/api/auth';
+import { login as apiLogin, logout as apiLogout, forgotPassword as apiForgotPassword } from '@/api/auth';
 
 export const useAuthStore = defineStore({
   id: 'auth',
@@ -48,6 +48,17 @@ export const useAuthStore = defineStore({
         return false; // Login failed
       }
     },
+    async forgotPassword({ email }) {
+      try {
+        const response = await apiForgotPassword({ email });
+        console.log(response)
+        return true; // Login successful
+      } catch (error) {
+        console.error('forgot password failed:', error);
+        return false; // Login failed
+      }
+    },
+
     async logout() {
       try {
         const refreshToken = localStorage.getItem('refreshToken');
