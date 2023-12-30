@@ -4,10 +4,11 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 
 import VerifyView from '@/views/VerifyView.vue'
+import ResetPasswordView from '@/views/auth/ResetPasswordView.vue'
 import Home from '@/views/HomeView.vue'
 import RegisterViewVue from '@/views/RegisterView.vue'
 import StyleViewVue from '@/views/StyleView.vue'
-
+import ForgotPasswordView from '@/views/auth/ForgotPasswordView.vue'
 
 
 const routes = [
@@ -34,6 +35,14 @@ const routes = [
     path: '/verify-email/:token/',
     name: 'verify-email',
     component: VerifyView
+  },
+  {
+    meta: {
+      title: 'Reset Password'
+    },
+    path: '/reset-password/:token/',
+    name: 'reset-password',
+    component: ResetPasswordView
   },
   {
     // Document title tag
@@ -156,6 +165,14 @@ const routes = [
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
+  },
+  {
+    meta: {
+      title: 'Forgot Password'
+    },
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component:ForgotPasswordView
   },
   {
     meta: {
