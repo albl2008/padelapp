@@ -31,16 +31,18 @@ const authStore = useAuthStore(pinia);
 
 
 // Initialize authentication state
+
 authStore.initializeAuth();
 
-
 if (authStore.isLoggedIn) {
+  
   const mainStore = useMainStore(pinia);
   mainStore.fetchSampleClients();
   mainStore.fetchSampleHistory();
 } else {
   // The user is not authenticated, you can redirect or show a login form
   // For example, you might want to redirect to the login page
+  console.log('NO ESTA LOGUEADO')
   router.push('/login');
 }
 

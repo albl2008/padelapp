@@ -26,11 +26,11 @@ export default [
     label: 'Canchas',
     icon: mdiPalette
   },
-  {
-    to: '/tables',
-    label: 'Tables',
-    icon: mdiTable
-  },
+  // {
+  //   to: '/tables',
+  //   label: 'Tables',
+  //   icon: mdiTable
+  // },
   {
     to: '/calendar',
     label: 'Calendario',
@@ -41,11 +41,11 @@ export default [
     label: 'Config',
     icon: mdiSettingsHelper
   },
-  {
-    to: '/forms',
-    label: 'Forms',
-    icon: mdiSquareEditOutline
-  },
+  // {
+  //   to: '/forms',
+  //   label: 'Forms',
+  //   icon: mdiSquareEditOutline
+  // },
   // {
   //   to: '/ui',
   //   label: 'UI',
@@ -66,38 +66,38 @@ export default [
     label: 'Profile',
     icon: mdiAccountCircle
   },
-  {
-    to: '/login',
-    label: 'Login',
-    icon: mdiLock
-  },
-  {
-    to: '/error',
-    label: 'Error',
-    icon: mdiAlertCircle
-  },
-  {
-    label: 'Dropdown',
-    icon: mdiViewList,
-    menu: [
-      {
-        label: 'Item One'
-      },
-      {
-        label: 'Item Two'
-      }
-    ]
-  },
-  {
-    href: 'https://github.com/justboil/admin-one-vue-tailwind',
-    label: 'GitHub',
-    icon: mdiGithub,
-    target: '_blank'
-  },
-  {
-    href: 'https://github.com/justboil/admin-one-react-tailwind',
-    label: 'React version',
-    icon: mdiReact,
-    target: '_blank'
-  }
+  // {
+  //   to: '/login',
+  //   label: 'Login',
+  //   icon: mdiLock
+  // },
+  // {
+  //   to: '/error',
+  //   label: 'Error',
+  //   icon: mdiAlertCircle
+  // },
+  // {
+  //   label: 'Dropdown',
+  //   icon: mdiViewList,
+  //   menu: [
+  //     {
+  //       label: 'Item One'
+  //     },
+  //     {
+  //       label: 'Item Two'
+  //     }
+  //   ]
+  // },
+  // {
+  //   href: 'https://github.com/justboil/admin-one-vue-tailwind',
+  //   label: 'GitHub',
+  //   icon: mdiGithub,
+  //   target: '_blank'
+  // },
+  // {
+  //   href: 'https://github.com/justboil/admin-one-react-tailwind',
+  //   label: 'React version',
+  //   icon: mdiReact,
+  //   target: '_blank'
+  // }
 ]

@@ -34,7 +34,8 @@
   currentMonth.value = view.title;
   const currentDate = dayjs(view.title);
   firstDayOfMonth.value = currentDate.startOf('month');
-  console.log('First day of the month:', firstDayOfMonth.value.format('YYYY-MM-DD'));
+  const secondDayOfMonth = firstDayOfMonth.value.add(1, 'month');
+  console.log('First day of the month:', secondDayOfMonth.format('MM-DD-YYYY'));
 };
 
 function titleTurno(number){
@@ -74,10 +75,15 @@ function titleTurno(number){
     let i = index % configStore.config[0].shiftsPerDay;
     return {
       title: `${titleTurno(i+1)}`,
+      color: shift.status.id === 1 ? '#3633FF' : '#6BFF33',
       start: shift.start,
       end: shift.end,
       extendedProps:{
-        shiftId: shift.id
+        shiftId: shift.id,
+        date: shift.date,
+        start: shift.start,
+        end: shift.end,
+        tolerance: shift.tolerance
       }
     };
   });
@@ -98,6 +104,10 @@ function handleEventClick(eventInfo) {
 
 const cancel = () => {
     isModalDangerActive.value = false
+}
+
+const cancelModal = () => {
+    isModalActive.value = false
 }
 
 watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShifts]) => {
@@ -130,6 +140,21 @@ const confirmEdit = (shift) => {
   router.push(`/edit-shift/${shiftId}`)
 };
 
+const confirmCreateTurnos = async () => {
+      const config = configStore.config[0];
+  debugger
+      const secondDayOfMonth = firstDayOfMonth.value.add(1, 'month');
+      await createShiftsMonth(secondDayOfMonth.format('MM-DD-YYYY'),config);
+      cancelModal()
+      shiftsStore.setNotification({ message: 'Se volvieron a crear los turnos correctamente', type: 'info' });
+      await shiftsStore.fetchShifts();
+      calendarOptions.value.events = displayShifts();
+};
+
+const dismissNotifications = () => {
+  shiftsStore.resetNotification();
+};
+
   const createShifts = async () => {
   try {
     const config = configStore.config[0];
@@ -139,16 +164,16 @@ const confirmEdit = (shift) => {
     }
     delete config.id
     delete config.shiftPrice
-    delete config.tolerance
-
-    const exists = await getShiftsMonth(firstDayOfMonth.value.format('YYYY-MM-DD'))
+    const secondDayOfMonth = firstDayOfMonth.value.add(1, 'month');
+    const exists = await getShiftsMonth(secondDayOfMonth.format('MM-DD-YYYY'))
 
     if (exists.data === true){
       console.log('ya estan creados')
       isModalActive.value = true
     } else {
-      await createShiftsMonth(firstDayOfMonth.value.format('YYYY-MM-DD'),config);
-      console.log('Shifts created successfully');
+      const secondDayOfMonth = firstDayOfMonth.value.add(1, 'month');
+      await createShiftsMonth(secondDayOfMonth.format('MM-DD-YYYY'),config);
+      shiftsStore.setNotification({ message: 'Se crearon los turnos correctamente', type: 'success' });
       await shiftsStore.fetchShifts();
       calendarOptions.value.events = displayShifts();
     }
@@ -169,17 +194,23 @@ const confirmEdit = (shift) => {
     <LayoutAuthenticated>
       <SectionMain>
         <h1>Turnos</h1>
-        <NotificationBar v-if="notification" :color="notification.type" @close="shiftsStore.resetNotification()">
+        <NotificationBar v-if="notification" :color="notification.type" @close="shiftsStore.resetNotification()" :dismissCallback="dismissNotifications">
         <b>{{ notification.message }}</b>
       </NotificationBar>
         <BaseButtons>
             <BaseButton color="info" outline label="Crear Mes" @click="createShifts" />
         </BaseButtons>
-        {{ configStore.config[0] }}
+        
         <FullCalendar :options='calendarOptions' />
         
-          <CardBoxModal v-model="isModalActive" :has-cancel="true" title="Event Details">
-            {{ event }} 
+          <CardBoxModal v-model="isModalActive" :has-cancel="false" title="Event Details">
+            <EditConfirmation
+              v-if="isModalActive"
+              v-model:isActive="isModalActive"
+              :confirmation-message="'Existen turnos creados para este mes. Desea generarlos nuevamente?'"
+              @confirm="confirmCreateTurnos()"
+              @cancel="cancelModal()"
+          />
         </CardBoxModal>
         <CardBoxModal v-model="isModalDangerActive" title="Editar Turno">
           <EditConfirmation

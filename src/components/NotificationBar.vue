@@ -6,8 +6,10 @@ import BaseLevel from '@/components/BaseLevel.vue'
 import BaseIcon from '@/components/BaseIcon.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import { useCourtsStore } from '@/stores/courts';
+import { useAuthStore } from '@/stores/auth'
 
 const courtsStore = useCourtsStore();
+const authStore = useAuthStore();
 
 const props = defineProps({
   icon: {
@@ -18,7 +20,8 @@ const props = defineProps({
   color: {
     type: String,
     required: true
-  }
+  },
+  dismissCallback: Function,
 })
 
 const componentClass = computed(() =>
@@ -28,7 +31,11 @@ const componentClass = computed(() =>
 const isDismissed = ref(false)
 
 const dismiss = () => {
+  console.log('dismiss')
   courtsStore.resetNotification()
+  //authStore.resetNotification()
+  props.dismissCallback();
+
   isDismissed.value = true
 }
 

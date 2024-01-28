@@ -7,6 +7,7 @@ export const useAuthStore = defineStore({
   state: () => ({
     user: null,
     isLoggedIn: false,
+    notification: null,
   }),
   actions: {
     initializeAuth() {
@@ -27,23 +28,31 @@ export const useAuthStore = defineStore({
         const response = await apiLogin({ email, password });
         const { user, tokens } = response.data;
 
-        this.setUser(user);
-        this.setLoggedIn(true);
 
-        // Save user and tokens to local storage
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('accessToken', tokens.access.token);
-        localStorage.setItem('refreshToken', tokens.refresh.token);
-
-        // Handle permissions based on the user's role (example)
-        if (user.role === 'admin') {
-          // Handle admin permissions
-        } else {
-          // Handle regular user permissions
+        if (response.status === 200){
+          this.setUser(user);
+          this.setLoggedIn(true);
+  
+          // Save user and tokens to local storage
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('accessToken', tokens.access.token);
+          localStorage.setItem('refreshToken', tokens.refresh.token);
+  
+          // Handle permissions based on the user's role (example)
+          if (user.role === 'admin') {
+            // Handle admin permissions
+          } else {
+            // Handle regular user permissions
+          }
+  
+          return true;
         }
 
-        return true; // Login successful
+        
       } catch (error) {
+        if (error.response.status === 401) [
+          this.setNotification({ message: 'Contraseña o email incorrecto', type: 'danger' })
+        ]
         console.error('Login failed:', error);
         return false; // Login failed
       }
@@ -62,17 +71,20 @@ export const useAuthStore = defineStore({
     async logout() {
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        await apiLogout(refreshToken);
-
-        // Clear user-related information from local storage
+        const response = await apiLogout(refreshToken);
+        if (response.status === 200){
         localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
 
         this.setUser(null);
         this.setLoggedIn(false);
+        
 
         return true; // Logout successful
+        }
+        // Clear user-related information from local storage
+        
       } catch (error) {
         console.error('Logout failed:', error);
         return false; // Logout failed
@@ -83,6 +95,16 @@ export const useAuthStore = defineStore({
     },
     setLoggedIn(isLoggedIn) {
       this.isLoggedIn = isLoggedIn;
+    },
+
+    setNotification({ message, type }) {
+      
+      this.notification = { message, type };
+    },
+    // Add resetNotification method
+    resetNotification() {
+      
+      this.notification = null;
     },
   },
 });
