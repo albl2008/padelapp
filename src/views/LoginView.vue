@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, computed, watch, onMounted} from 'vue'
 import { useRouter } from 'vue-router'
 import { mdiAccount, mdiAsterisk } from '@mdi/js'
 import SectionFullScreen from '@/components/SectionFullScreen.vue'
@@ -8,6 +8,7 @@ import FormCheckRadio from '@/components/FormCheckRadio.vue'
 import FormField from '@/components/FormField.vue'
 import FormControl from '@/components/FormControl.vue'
 import BaseButton from '@/components/BaseButton.vue'
+import NotificationBar from '@/components/NotificationBar.vue'
 import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutGuest from '@/layouts/LayoutGuest.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -15,13 +16,27 @@ import { getLastVisitedURL } from '@/api/interceptor'
 
 const form = reactive({
   email: 'alvaroblanco10@gmail.com',
-  pass: '101201230a',
+  pass: 'sopa0102',
   remember: true
 })
 
 const router = useRouter()
 
 const authStore = useAuthStore()
+
+const notification = computed(() => authStore.notification);
+const isLoggedIn = computed(() => authStore.isLoggedIn);
+
+watch(notification, (newNotification) => {
+  if (newNotification) {
+    console.log(newNotification)
+  }
+  
+});
+
+onMounted(  () => {
+                                                                             
+})
 
 const submit = async () => {
   try {
@@ -32,15 +47,18 @@ const submit = async () => {
     });
 
     if (loginSuccess) {
-      const lastVisitedURL = getLastVisitedURL();
+      console.log('Login correcto')
+      const lastVisitedURL = authStore.getLastVisitedURL;
           if (lastVisitedURL) {
               router.push(lastVisitedURL);
           } else {
-              // Redirect to the default dashboard or any other desired route
               router.push('/dashboard');
-}
+          }
     } else {
       // Handle login failure
+      console.log('error en inicio de sesion')
+      
+   
       console.error('Login failed');
     }
   } catch (error) {
@@ -49,6 +67,10 @@ const submit = async () => {
   }
 }
 
+const dismissNotifications = () => {
+  authStore.resetNotification();
+};
+
 
 </script>
 
@@ -56,6 +78,9 @@ const submit = async () => {
   <LayoutGuest>
     <SectionFullScreen v-slot="{ cardClass }" bg="purplePink">
       <CardBox :class="cardClass" is-form @submit.prevent="submit">
+        <NotificationBar v-if="notification" :color="notification.type" @close="authStore.resetNotification"  :dismissCallback="dismissNotifications">
+        <b>{{ notification.message }}</b>
+        </NotificationBar>
         <FormField label="Email" help="Please enter your email">
           <FormControl
             v-model="form.email"

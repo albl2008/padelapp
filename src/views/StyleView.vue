@@ -5,6 +5,8 @@ import { gradientBgPurplePink } from '@/colors.js'
 import SectionMain from '@/components/SectionMain.vue'
 import CardBox from '@/components/CardBox.vue'
 import LayoutGuest from '@/layouts/LayoutGuest.vue'
+import BaseButton from '@/components/BaseButton.vue'
+import { mdiLogin } from '@mdi/js'
 
 const styles = ['white', 'basic']
 
@@ -23,19 +25,31 @@ const handleStyleChange = (slug) => {
 
   router.push('/dashboard')
 }
+
+const login = () => {
+  // Redirect to /forms when the button is clicked
+  router.push('/login');
+};
 </script>
 
 <template>
   <LayoutGuest>
     <div :class="gradientBgPurplePink" class="flex min-h-screen items-center justify-center">
       <SectionMain>
+        
+        
         <h1 class="text-4xl md:text-5xl text-center text-white font-bold mt-12 mb-3 lg:mt-0">
           Pick a style&hellip;
         </h1>
+        <div class="ml-0"> 
+          <BaseButton  :icon="mdiLogin" label="Login" color="primary" @click="login" />
+        </div>
         <h2 class="text-xl md:text-xl text-center text-white mb-12">
           Style switching with a single
           <code class="px-1.5 py-0.5 rounded bg-white bg-opacity-20">modifier</code>
+          
         </h2>
+        
         <div class="grid gap-6 grid-cols-1 lg:grid-cols-2 px-6 max-w-6xl mx-auto">
           <CardBox
             v-for="style in styles"

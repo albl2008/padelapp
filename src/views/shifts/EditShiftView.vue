@@ -12,7 +12,7 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
-import { getShiftById, updateShift } from '@/api/shifts'
+import { getShiftById, updateShift, bookShift } from '@/api/shifts'
 import router from '@/router'
 import { useShiftsStore } from '@/stores/shifts';
 import { useCourtsStore } from '@/stores/courts'
@@ -31,6 +31,7 @@ const form = reactive({
   start: '',
   end: '',
   duration: '',
+  tolerance: '',
   court: '',
   client:'',
   price: ''
@@ -48,8 +49,8 @@ const submit = async () => {
     }
     if (isEditMode.value) {
       // If in edit mode, update the court
-      await updateShift(router.currentRoute.value.params.idShift, shift);
-      shiftsStore.setNotification({ message: 'Turno actualizado correctamente', type: 'info' });
+      await bookShift(router.currentRoute.value.params.idShift, shift);
+      shiftsStore.setNotification({ message: 'Turno asginado correctamente', type: 'info' });
 
     } else {
       // If in create mode, create a new court
@@ -89,14 +90,15 @@ onMounted(async () => {
     try {
       const shift = await getShiftById(shiftId);
       console.log(shift)
-      form.date = shift.data.date
-      form.start = shift.data.start
-      form.end = shift.data.end
+      form.date = new Date(shift.data.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'UTC' });
+      form.start = new Date(shift.data.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'}) 
+      form.end = new Date(shift.data.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'})
+      form.tolerance = shift.data.tolerance ? shift.data.tolerance + ' min' : configStore.config[0].tolerance + ' min'
       form.price = shift.data.price ? shift.data.price : configStore.config[0].shiftPrice
       form.court = shift.data.court ? shift.data.court : ''
       form.client = shift.data.client ? shift.data.client : ''
     } catch (error) {
-      console.error('Error fetching court details:', error);
+      console.error('Error fetching shift details:', error);
       // Handle error if needed
     }
   }
@@ -119,7 +121,7 @@ onMounted(async () => {
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton :icon="mdiBallotOutline" :title="isEditMode ? 'Editar Cancha' : 'Crear Cancha'" main>
+      <SectionTitleLineWithButton :icon="mdiBallotOutline" :title="isEditMode ? 'Editar Turno' : 'Crear Turno'" main>
         <!-- <BaseButton
           href="https://github.com/justboil/admin-one-vue-tailwind"
           target="_blank"
@@ -132,13 +134,17 @@ onMounted(async () => {
       </SectionTitleLineWithButton>
       <CardBox is-form @submit.prevent="submit">
         <FormField label="Fecha">
-          <FormControl v-model="form.date"  />
+          <FormControl v-model="form.date" :disabled="true" />
         </FormField>
         <FormField label="Inicio">
-          <FormControl v-model="form.start"  />
+          <FormControl v-model="form.start"  :disabled="true" />
         </FormField>
         <FormField label="Fin">
-          <FormControl v-model="form.end"  />
+          <FormControl v-model="form.end" :disabled="true" />
+        </FormField>
+
+        <FormField label="Tolerancia">
+          <FormControl v-model="form.tolerance"  />
         </FormField>
 
         <FormField label="Precio">

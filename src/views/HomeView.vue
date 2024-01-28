@@ -23,18 +23,31 @@ import CardBoxClient from '@/components/CardBoxClient.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import SectionBannerStarOnGitHub from '@/components/SectionBannerStarOnGitHub.vue'
+import { useAuthStore } from '@/stores/auth'
+import { useCourtsStore } from '@/stores/courts'
+import { useRouter } from 'vue-router'
 
+
+const authStore = useAuthStore()
+const courtsStore = useCourtsStore()
+const courts = ref([]);
+const router = useRouter()
 const chartData = ref(null)
-
+const isLoggedIn = computed(() => authStore.isLoggedIn);
 const fillChartData = () => {
   chartData.value = chartConfig.sampleChartData()
 }
 
-onMounted(() => {
-  fillChartData()
+
+onMounted( async() => {
+                                            
 })
 
 const mainStore = useMainStore()
+const fetchCourts = async () => {
+  courts.value = await courtsStore.fetchCourts();
+};
+
 
 const clientBarItems = computed(() => mainStore.clients.slice(0, 4))
 
