@@ -40,6 +40,10 @@ const createCourt = () => {
 
 const notification = computed(() => courtsStore.notification);
 
+const dismissNotifications = () => {
+  configStore.resetNotification();
+};
+
 // Watch changes in the notification and perform actions accordingly
 // You might want to customize this based on your notification handling logic
 watch(notification, (newNotification) => {
@@ -65,7 +69,7 @@ watch(notification, (newNotification) => {
         <BaseButton :icon="mdiPlus" label="Create Court" color="primary" @click="createCourt" />
 
       </SectionTitleLineWithButton>
-      <NotificationBar v-if="notification" :color="notification.type" @close="courtsStore.resetNotification()">
+      <NotificationBar v-if="notification" :color="notification.type" @close="courtsStore.resetNotification()" :dismissCallback="dismissNotifications">
         <b>{{ notification.message }}</b>
       </NotificationBar>
 

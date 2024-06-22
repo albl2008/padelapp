@@ -6,6 +6,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
 
   function set(payload = null) {
     isEnabled.value = payload !== null ? payload : !isEnabled.value
+    
 
     if (typeof document !== 'undefined') {
       document.body.classList[isEnabled.value ? 'add' : 'remove']('dark-scrollbars')
@@ -15,15 +16,17 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         'dark-scrollbars-compat'
       )
     }
-
-    // You can persist dark mode setting
-    // if (typeof localStorage !== 'undefined') {
-    //   localStorage.setItem('darkMode', this.darkMode ? '1' : '0')
-    // }
+    
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('darkMode', isEnabled.value ? '1' : '0')
+    }
   }
+
 
   return {
     isEnabled,
     set
   }
 })
+
+

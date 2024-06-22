@@ -52,17 +52,17 @@ function titleTurno(number){
     plugins: [dayGridPlugin],
     initialView: 'dayGridMonth',
     weekends: true,
+    timeZone: 'UTC',
     events: [
       { title: 'Meeting', start: new Date() }
     ],
     
     datesSet: handleDatesSet,
     eventClick: handleEventClick,
-    timezone: 'UTC',
+    
     eventRender: function (info) {
     // Modify the rendering of each event here
-    info
-    debugger
+    info.el.style.backgroundColor = '#FFFFFF';
   }
   });
 
@@ -134,10 +134,10 @@ watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShif
   }
 });
 
-const confirmEdit = (shift) => {
+const selectedCourt = (court,shift) => {
   debugger
   const shiftId = shift.shiftId
-  router.push(`/edit-shift/${shiftId}`)
+  router.push(`/edit-shift/${shiftId}/${court}`)
 };
 
 const confirmCreateTurnos = async () => {
@@ -212,12 +212,12 @@ const dismissNotifications = () => {
               @cancel="cancelModal()"
           />
         </CardBoxModal>
-        <CardBoxModal v-model="isModalDangerActive" title="Editar Turno">
+        <CardBoxModal v-model="isModalDangerActive" title="Agendar Turno">
           <EditConfirmation
               v-if="isModalDangerActive"
               v-model:isActive="isModalDangerActive"
               :item="event.shiftId"
-              @confirm="confirmEdit(event.extendedProps)"
+              @confirm="selectedCourt($event,event.extendedProps)"
               @cancel="cancel"
           />
   </CardBoxModal>

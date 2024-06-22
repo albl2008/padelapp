@@ -11,6 +11,7 @@ import UserAvatar from '@/components/UserAvatar.vue';
 import { deleteConfig } from '@/api/config';
 import DeleteConfirmation from '@/components/DeleteConfirmation.vue'
 import router from '@/router';
+ import NotificationBar from '@/components/NotificationBar.vue'
 
 const configsStore = useConfigStore();
 
@@ -23,6 +24,7 @@ const configDeleted = ref(false);
 const config = ref(null);
 const isDeleting = ref(false);
 const deletionError = ref(null);
+const notification = computed(() => configsStore.notification);
 
 const cancelDelete = () => {
     isModalDangerActive.value = false
@@ -101,6 +103,11 @@ const configToEdit = (config) => {
   router.push(`/edit-config/${config.id}`)
 };
 
+const convertDays = (days) => {
+  const daysOfWeek = ['D','L', 'M', 'M', 'J', 'V', 'S'];
+  return days.map((day) => daysOfWeek[day]).join(', ');
+};
+
 
 const checked = (isChecked, config) => {
   if (isChecked) {
@@ -136,6 +143,7 @@ const checked = (isChecked, config) => {
       <th>Tolerancia</th>
       <th>Primer Turno</th>
       <th>Turnos por dia</th>
+      <th>Dias operativos</th>
       <th />
     </tr>
   </thead>
@@ -156,6 +164,9 @@ const checked = (isChecked, config) => {
       </td>
       <td data-label="Shifts per day">
         {{ config.shiftsPerDay }}
+      </td>
+      <td data-label="Working Days">
+        {{ convertDays(config.operativeDays) }}
       </td>
       <td class="before:hidden lg:w-1 whitespace-nowrap">
         <!-- Adjust the buttons or actions based on your requirements -->

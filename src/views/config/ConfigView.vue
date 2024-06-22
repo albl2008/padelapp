@@ -8,7 +8,6 @@ import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import CardBoxComponentEmpty from '@/components/CardBoxComponentEmpty.vue'
-
 import { onMounted, ref, computed, watch } from 'vue';
 import { useConfigStore } from '@/stores/config';
 
@@ -16,6 +15,7 @@ import router from '../../router/index'
 
 
 const configStore = useConfigStore();
+
 const config = ref([]);
 
 onMounted(async () => {
@@ -39,6 +39,11 @@ const createConfig = () => {
 };
 
 const notification = computed(() => configStore.notification);
+
+const dismissNotifications = () => {
+  configStore.resetNotification();
+};
+
 
 // Watch changes in the notification and perform actions accordingly
 // You might want to customize this based on your notification handling logic
@@ -65,7 +70,7 @@ watch(notification, (newNotification) => {
         <BaseButton v-if="!configStore.config.length > 0" :icon="mdiPlus" label="Create Config" color="primary" @click="createConfig" />
 
       </SectionTitleLineWithButton>
-      <NotificationBar v-if="notification" :color="notification.type" @close="configStore.resetNotification()">
+      <NotificationBar v-if="notification" :color="notification.type" @close="configStore.resetNotification()" :dismissCallback="dismissNotifications">
         <b>{{ notification.message }}</b>
       </NotificationBar>
 

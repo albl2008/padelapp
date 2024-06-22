@@ -18,6 +18,7 @@ import { useShiftsStore } from '@/stores/shifts';
 import { useCourtsStore } from '@/stores/courts'
 import { config } from '@fullcalendar/core/internal'
 import { useConfigStore } from '@/stores/config'
+import { getCourtById } from '@/api/courts'
 
 
 
@@ -80,8 +81,8 @@ function courtsOptions(){
 onMounted(async () => {
   // Check if an id parameter is present in the URL
   const shiftId = router.currentRoute.value.params.idShift;
-  await configStore.fetchConfig()
-  await courtsStore.fetchCourts()
+  const courtId = router.currentRoute.value.params.idCourt;
+  await configStore.fetchConfig();
   
   if (shiftId && configStore.config[0]) {
     isEditMode.value = true;
@@ -89,13 +90,15 @@ onMounted(async () => {
     // Fetch court details based on the id and populate the form
     try {
       const shift = await getShiftById(shiftId);
+      const court = await getCourtById(courtId);
+      console.log(court.data.number)
       console.log(shift)
       form.date = new Date(shift.data.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'UTC' });
       form.start = new Date(shift.data.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'}) 
       form.end = new Date(shift.data.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'})
       form.tolerance = shift.data.tolerance ? shift.data.tolerance + ' min' : configStore.config[0].tolerance + ' min'
       form.price = shift.data.price ? shift.data.price : configStore.config[0].shiftPrice
-      form.court = shift.data.court ? shift.data.court : ''
+      form.court = shift.data.court ? shift.data.court : court.data.number
       form.client = shift.data.client ? shift.data.client : ''
     } catch (error) {
       console.error('Error fetching shift details:', error);
@@ -133,6 +136,8 @@ onMounted(async () => {
         /> -->
       </SectionTitleLineWithButton>
       <CardBox is-form @submit.prevent="submit">
+        <div class="w-full flex grid md:grid-cols-2 grid-cols-1 place-items-center">
+          <div class="w-2/3">
         <FormField label="Fecha">
           <FormControl v-model="form.date" :disabled="true" />
         </FormField>
@@ -146,7 +151,8 @@ onMounted(async () => {
         <FormField label="Tolerancia">
           <FormControl v-model="form.tolerance"  />
         </FormField>
-
+        </div>
+        <div class="w-2/3">
         <FormField label="Precio">
           <FormControl v-model="form.price" type="number"/>
         </FormField>
@@ -158,7 +164,7 @@ onMounted(async () => {
         <FormField label="Cancha">
           <FormControl v-model="form.court" :options="courtsOptions()" />
         </FormField>
-
+        </div>
         <!-- <FormField label="Superficie">
           <FormCheckRadioGroup
             v-model="form.surface"
@@ -168,7 +174,7 @@ onMounted(async () => {
           />
         </FormField> -->
 
-
+        </div>  
         <BaseDivider />
         <template #footer>
           <BaseButtons>

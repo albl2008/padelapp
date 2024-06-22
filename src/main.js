@@ -51,13 +51,19 @@ if (authStore.isLoggedIn) {
 
 // Uncomment, if you'd like to restore persisted darkMode setting, or use `prefers-color-scheme: dark`.
 // Make sure to uncomment localStorage block in src/stores/darkMode.js
-// const darkModeStore = useDarkModeStore(pinia);
-// if (
-//   (!localStorage['darkMode'] && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
-//   localStorage['darkMode'] === '1'
-// ) {
-//   darkModeStore.set(true);
-// }
+// Dark mode
+// Uncomment, if you'd like to restore persisted darkMode setting, or use `prefers-color-scheme: dark`. Make sure to uncomment localStorage block in src/stores/darkMode.js
+import { useDarkModeStore } from './stores/darkMode'
+
+const darkModeStore = useDarkModeStore(pinia)
+console.log('darkMode: ', localStorage.getItem('darkMode'))
+if (
+  (!localStorage.key['darkMode'] && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
+  localStorage.getItem === '1'
+) {
+ 
+  darkModeStore.set(true)
+}
 
 // Default title tag
 const defaultDocumentTitle = 'appadel';

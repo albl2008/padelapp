@@ -112,15 +112,20 @@ onMounted(async () => {
         /> -->
       </SectionTitleLineWithButton>
       <CardBox is-form @submit.prevent="submit">
-        <FormField label="Nombre">
+        <div class="w-full flex grid md:grid-cols-2 grid-cols-1 place-items-center">
+
+        <div class="w-2/3">
+
+          <FormField label="Nombre">
           <FormControl v-model="form.name"  />
         </FormField>
 
         <FormField label="Numero">
           <FormControl v-model="form.number" type="number"/>
         </FormField>
-
-        <FormField label="Superficie">
+        </div>
+        <div class="w-2/3 mt-4">
+          <FormField label="Superficie">
           <FormCheckRadioGroup
             v-model="form.surface"
             name="superficie-radio"
@@ -138,12 +143,21 @@ onMounted(async () => {
             :options="{ blindex: 'Blindex', cemento: 'Cemento' }"
           />
         </FormField>
+
+        </div>
+
+        
+
+      </div>
         <BaseDivider />
         <template #footer>
-          <BaseButtons>
+          <div class="flex justify-end">
+            <BaseButtons>
             <BaseButton type="submit" color="info" :label="isEditMode ? 'Editar' : 'Crear'" />
             <BaseButton color="info" outline label="Volver" @click="backToCurts" />
           </BaseButtons>
+          </div>
+          
         </template>
       </CardBox>
     </SectionMain>
