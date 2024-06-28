@@ -58,7 +58,7 @@ const submit = async () => {
       await createCourt(court);
       courtsStore.setNotification({ message: 'Cancha creada correctamente', type: 'success' });
     }
-    router.push('/calendar');
+    router.push('/dashboard');
   } catch (error) {
     console.error('Error updating shift:', error);
     // Handle error if needed
@@ -66,7 +66,7 @@ const submit = async () => {
 };
 
 const backToCalendar = () => {
-  router.push('/calendar')
+  router.push('/dashboard')
 }
 
 function courtsOptions(){
@@ -121,7 +121,7 @@ onMounted(async () => {
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton :icon="mdiBallotOutline" :title="isEditMode ? 'Editar Turno' : 'Crear Turno'" main>
+      <SectionTitleLineWithButton :icon="mdiBallotOutline" :title="isEditMode ? 'Agendar Turno' : 'Crear Turno'" main>
         <!-- <BaseButton
           href="https://github.com/justboil/admin-one-vue-tailwind"
           target="_blank"

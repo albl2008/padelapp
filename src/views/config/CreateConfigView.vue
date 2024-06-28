@@ -1,6 +1,6 @@
 <script setup>
 
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { mdiBallotOutline } from '@mdi/js'
 import SectionMain from '@/components/SectionMain.vue'
 import CardBox from '@/components/CardBox.vue'
@@ -13,8 +13,9 @@ import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import { createConfig, getConfigById, updateConfig } from '@/api/config'
-import router from '@/router'
 import { useConfigStore } from '@/stores/config';
+import NotificationBar from '@/components/NotificationBar.vue'
+import router from '@/router'
 import VueDatePicker from '@vuepic/vue-datepicker';
 import Multiselect from 'vue-multiselect'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -25,6 +26,9 @@ import '@vuepic/vue-datepicker/dist/main.css'
 
 const configStore = useConfigStore();
 
+const notification = computed(() => configStore.notification);
+
+
 
 const form = reactive({
   shiftDuration: undefined,
@@ -32,7 +36,8 @@ const form = reactive({
   tolerance: undefined,
   firstShift: undefined,
   shiftsPerDay: undefined,
-  workingDays: undefined
+  workingDays: undefined,
+  courtsQuantity: undefined
 })
 
 const days = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
@@ -60,7 +65,8 @@ const submit = async () => {
       tolerance: form.tolerance,
       firstShift: currentDate,
       shiftsPerDay: form.shiftsPerDay,
-      operativeDays: convertDays(form.workingDays)
+      operativeDays: convertDays(form.workingDays),
+      courtsQuantity: form.courtsQuantity
     }
     if (isEditMode.value) {
       // If in edit mode, update the config
@@ -76,6 +82,7 @@ const submit = async () => {
     }
     router.push('/config');
   } catch (error) {
+    configStore.setNotification({ message: 'Error creando configuracion:' + error, type: 'danger' });
     console.error('Error creating config:', error);
     // Handle error if needed
   }
@@ -84,6 +91,10 @@ const submit = async () => {
 const backToConfig = () => {
   router.push('/config')
 }
+
+const dismissNotifications = () => {
+  configStore.resetNotification();
+};
 
 const convertDays = (selectedDays) => {
   const realDays = Array.isArray(selectedDays) ? selectedDays : Object.values(selectedDays); // Handle both array and object cases
@@ -113,6 +124,7 @@ onMounted(async () => {
       form.firstShift = {hours:hours, minutes:minutes}
       form.shiftsPerDay = configDetails.data.shiftsPerDay;
       form.workingDays = configDetails.data.operativeDays.map(dayIndex => days[dayIndex]);
+      form.courtsQuantity = configDetails.data.courtsQuantity;
       //form.inUse = configDetails.data.inUse;
     } catch (error) {
       console.error('Error fetching config details:', error);
@@ -151,6 +163,10 @@ onMounted(async () => {
           small
         /> -->
       </SectionTitleLineWithButton>
+      <NotificationBar v-if="notification" :color="notification.type" @close="configStore.resetNotification()" :dismissCallback="dismissNotifications">
+        <b>{{ notification.message }}</b>
+      </NotificationBar>
+
       <CardBox is-form @submit.prevent="submit">
         <div class="w-full flex grid md:grid-cols-2 grid-cols-1 place-items-center">
 
@@ -165,6 +181,10 @@ onMounted(async () => {
 
         <FormField label="Precio Turno">
           <FormControl v-model="form.shiftPrice"  type="number"/>
+        </FormField>
+
+        <FormField label="Cantidad de canchas">
+          <FormControl v-model="form.courtsQuantity"  type="number"/>
         </FormField>
 
         

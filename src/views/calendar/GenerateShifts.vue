@@ -4,6 +4,8 @@
   import BaseButton from '@/components/BaseButton.vue';
   import CardBox from '@/components/CardBox.vue';
 
+
+  
   const props = defineProps({
     isActive: Boolean,
     confirmLabel: {
@@ -24,20 +26,16 @@
     },
     confirmationMessage: {
       type: String,
-      default: 'Asignar este turno?',
-    },
-    events: {
-      type: Array,
-      default: () => [],
+      default: '',
     },
   });
   
   const emit = defineEmits();
   
-  const confirm = (shiftId) => {
+  const confirm = () => {
     // Emit an event to confirm the action and pass the itemIdToDelete
-    console.log(shiftId)
-    emit('confirm', shiftId);
+    
+    emit('confirm', props.item);
   };
   
   const cancel = () => {
@@ -45,7 +43,7 @@
     emit('cancel');
   };
 
-  
+
   </script>
 
 
@@ -56,10 +54,9 @@
     <div v-if="isActive">
       <CardBox>
         <template #footer>
+          <p class="mb-4">{{ confirmationMessage }}</p>
           <BaseButtons>
-            <div v-for="item in events">
-              <BaseButton :label="'Cancha: ' + item.court.number + ''" :color="item.status.id === 0 ? 'success' : confirmColor" @click="confirm(item.id)" />
-            </div>
+            <BaseButton :label="confirmLabel" :color="confirmColor" @click="confirm()" />
             <BaseButton v-if="hasCancel" label="Cancelar" :color="cancelColor" outline @click="cancel" />
           </BaseButtons>
         </template>

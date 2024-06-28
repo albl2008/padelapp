@@ -11,26 +11,57 @@ import CardBoxComponentEmpty from '@/components/CardBoxComponentEmpty.vue'
 
 import { onMounted, ref, computed, watch } from 'vue';
 import { useCourtsStore } from '@/stores/courts';
+import { useConfigStore } from '@/stores/config'
 
 import router from '../../router/index'
 
 
 const courtsStore = useCourtsStore();
+const configStore = useConfigStore();
+const config = ref([]);
 const courts = ref([]);
+const allCourtsCreated = ref(false);
 
 onMounted(async () => {
   console.log('Component mounted!');
+  await fetchConfig();
   await fetchCourts();
-}); 
+  checkCompleteCourts()
 
-const handleCourtDeleted = () => {
-  console.log('Court deleted:');
-  fetchCourts(); // Refresh the courts after deletion
-  courtsStore.setNotification({ message: 'Cancha eliminada correctamente', type: 'danger' });
-};
+});
+
+watch(courts
+, () => {
+  console.log('observando')
+  checkCompleteCourts()
+}
+)
+
+
+
+const checkCompleteCourts = () => {
+  
+  const totalCourts = configStore.config[0].courtsQuantity
+  const createdCourts = courtsStore.courts.length
+
+  if (totalCourts === createdCourts) {
+    allCourtsCreated.value = true
+    courtsStore.setNotification({ message: 'Canchas completas', type: 'success' });
+  } else {
+    allCourtsCreated.value = false
+    courtsStore.setNotification({ message: 'Canchas incompletas. Faltan ' + (totalCourts - createdCourts), type: 'danger' });
+  }
+}
+
+
 
 const fetchCourts = async () => {
   courts.value = await courtsStore.fetchCourts();
+};
+
+const fetchConfig = async () => {
+  config.value = await configStore.fetchConfig();
+  console.log(configStore.config);
 };
 
 const createCourt = () => {
@@ -40,17 +71,12 @@ const createCourt = () => {
 
 const notification = computed(() => courtsStore.notification);
 
+
+
 const dismissNotifications = () => {
-  configStore.resetNotification();
+  courtsStore.resetNotification();
 };
 
-// Watch changes in the notification and perform actions accordingly
-// You might want to customize this based on your notification handling logic
-watch(notification, (newNotification) => {
-  if (newNotification) {
-    
-  }
-});
 </script>
 
 <template>
@@ -66,15 +92,14 @@ watch(notification, (newNotification) => {
           rounded-full
           small
         /> -->
-        <BaseButton :icon="mdiPlus" label="Create Court" color="primary" @click="createCourt" />
-
+        <BaseButton v-if="!allCourtsCreated"  :icon="mdiPlus" label="Create Court" color="primary" @click="createCourt" />
       </SectionTitleLineWithButton>
       <NotificationBar v-if="notification" :color="notification.type" @close="courtsStore.resetNotification()" :dismissCallback="dismissNotifications">
         <b>{{ notification.message }}</b>
       </NotificationBar>
 
       <CardBox class="mb-6" has-table>
-        <TableCourts />
+        <TableCourts @court-deleted="checkCompleteCourts"/>
       </CardBox>
 
       <!-- <SectionTitleLineWithButton v-if="courts.length === 0" :icon="mdiTableOff" title="Empty variation" />

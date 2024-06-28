@@ -122,9 +122,17 @@ const routes = [
     meta: {
       title: 'Editar Turno'
     },
-    path: '/edit-shift/:idShift/:idCourt', 
+    path: '/edit-shift/:idShift', 
     name: 'edit-shift',
     component: () => import('@/views/shifts/EditShiftView.vue')
+  },
+  {
+    meta: {
+      title: 'Agendar Turno'
+    },
+    path: '/book-shift/:idShift', 
+    name: 'book-shift',
+    component: () => import('@/views/shifts/BookShiftView.vue')
   },
   {
     meta: {

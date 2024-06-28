@@ -1,5 +1,5 @@
 <script setup>
-import { mdiCog } from '@mdi/js'
+import { mdiCalendar, mdiCog } from '@mdi/js'
 import CardBox from '@/components/CardBox.vue'
 import NumberDynamic from '@/components/NumberDynamic.vue'
 import BaseIcon from '@/components/BaseIcon.vue'
@@ -10,6 +10,10 @@ import BaseButton from '@/components/BaseButton.vue'
 defineProps({
   number: {
     type: Number,
+    default: 0
+  },
+  total:{
+    type:Number,
     default: 0
   },
   icon: {
@@ -33,7 +37,7 @@ defineProps({
     default: null
   },
   trend: {
-    type: String,
+    type: Number,
     default: null
   },
   trendType: {
@@ -47,7 +51,7 @@ defineProps({
   <CardBox>
     <BaseLevel v-if="trend" class="mb-3" mobile>
       <PillTagTrend :trend="trend" :trend-type="trendType" small />
-      <BaseButton :icon="mdiCog" icon-w="w-4" icon-h="h-4" color="lightDark" small />
+      <!-- <BaseButton :icon="mdiCalendar" icon-w="w-4" icon-h="h-4" color="lightDark" small /> -->
     </BaseLevel>
     <BaseLevel mobile>
       <div>
@@ -55,7 +59,11 @@ defineProps({
           {{ label }}
         </h3>
         <h1 class="text-3xl leading-tight font-semibold">
-          <NumberDynamic :value="number" :prefix="prefix" :suffix="suffix" />
+          <div>
+            {{ total }} / {{ number }}
+          </div>
+          
+          
         </h1>
       </div>
       <BaseIcon v-if="icon" :path="icon" size="48" w="" h="h-16" :class="color" />

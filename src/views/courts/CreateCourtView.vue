@@ -1,6 +1,6 @@
 <script setup>
 
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, watch, computed } from 'vue'
 import { mdiBallotOutline } from '@mdi/js'
 import SectionMain from '@/components/SectionMain.vue'
 import CardBox from '@/components/CardBox.vue'
@@ -13,24 +13,64 @@ import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import { createCourt, getCourtById, updateCourt } from '@/api/courts'
+import NotificationBar from '@/components/NotificationBar.vue'
 import router from '@/router'
 import { useCourtsStore } from '@/stores/courts';
+
+import joi from 'joi'
 
 
 const courtsStore = useCourtsStore();
 
+const courts = computed(() => courtsStore.courts)
+
 
 const form = reactive({
   name: '',
-  number: '',
+  number: null,
   surface: '',
   walls: '',
-  inUse: false
 })
+
+const touchedFields = reactive({
+  name: false,
+  number: false,
+  surface: false,
+  walls: false
+})
+
+
+const schema = joi.object({
+  name: joi.string().required(),
+  number: joi.number().required(),
+  surface: joi.string().required(),
+  walls: joi.string().required(),
+});
+
+
+const validateField = (field) => {
+  debugger
+  const { error } = schema.validate({ [field]: form[field] }, { abortEarly: false })
+  return error ? error.details.some(detail => detail.context.key === field) : false
+}
 
 const isEditMode = ref(false);
 
 const submit = async () => {
+  debugger
+  const { error } = schema.validate(form, { abortEarly: false })
+  if (error) {
+    console.log(error)
+    Object.keys(touchedFields).forEach(field => {
+      touchedFields.field = true
+    })
+    Object.keys(form).forEach(field => {
+      validateField(field)
+    })
+    courtsStore.setNotification({ message: 'Todos los campos son requeridos', type: 'danger' });
+    return
+  }
+
   try {
     const court = {
         name: form.name,
@@ -63,6 +103,8 @@ const backToCurts = () => {
 
 
 onMounted(async () => {
+  await fetchCourts();
+  await fetchConfig()
   // Check if an id parameter is present in the URL
   const courtId = router.currentRoute.value.params.idCourt;
   if (courtId) {
@@ -81,7 +123,56 @@ onMounted(async () => {
       // Handle error if needed
     }
   }
+
+  
 });
+
+
+
+const fetchCourts = async () => {
+  courts.value = await courtsStore.fetchCourts();
+  const lastCourtNumber = getLastCourtNumber(courts.value)
+  form.number = lastCourtNumber
+};
+const getLastCourtNumber = (courts) => {
+  debugger
+
+  if (courts.length === 0){
+    return 1
+  }
+  let min = 0
+  for (const court of courts){
+    debugger
+    min = court.number
+    if (min > court.number){
+      min = court.number
+    }
+
+    
+  }
+  const nextNumber = min + 1
+  return nextNumber
+
+
+
+  
+}
+
+
+const notification = computed(() => courtsStore.notification);
+
+const dismissNotifications = () => {
+  courtsStore.resetNotification();
+};
+
+
+watch(form, (newForm) => {
+  Object.keys(touchedFields).forEach(field => {
+    if (newForm[field] !== '') {
+      touchedFields[field] = true
+    }
+  })
+}, { deep: true })
 
 
 // const formStatusWithHeader = ref(true)
@@ -112,38 +203,56 @@ onMounted(async () => {
         /> -->
       </SectionTitleLineWithButton>
       <CardBox is-form @submit.prevent="submit">
+        <NotificationBar v-if="notification" :color="notification.type" @close="courtsStore.resetNotification()" :dismissCallback="dismissNotifications">
+            <b>{{ notification.message }}</b>
+        </NotificationBar>
         <div class="w-full flex grid md:grid-cols-2 grid-cols-1 place-items-center">
-
+         
         <div class="w-2/3">
 
           <FormField label="Nombre">
-          <FormControl v-model="form.name"  />
-        </FormField>
+            <FormControl 
+              v-model="form.name" 
+              :error="touchedFields.name && validateField('name')" 
+              @blur="touchedFields.name = true" 
+            />
+          </FormField>
+          <FormField label="Numero">
+            <FormControl 
+              v-model="form.number" 
+              type="number" 
+              :error="touchedFields.number && validateField('number')"
+              :disabled="true"
+              @blur="touchedFields.number = true" 
+            />
+          </FormField>
 
-        <FormField label="Numero">
-          <FormControl v-model="form.number" type="number"/>
-        </FormField>
         </div>
         <div class="w-2/3 mt-4">
           <FormField label="Superficie">
-          <FormCheckRadioGroup
-            v-model="form.surface"
-            name="superficie-radio"
-            type="radio"
-            :options="{ sintetico: 'Sintetico', cemento: 'Cemento' }"
-          />
-        </FormField>
+  <FormCheckRadioGroup
+    v-model="form.surface"
+    name="superficie-radio"
+    type="radio"
+    :options="{ sintetico: 'Sintetico', cemento: 'Cemento' }"
+    :class="{ 'border-red-500': touchedFields.surface && validateField('surface') }"
+    :error="touchedFields.surface && validateField('surface')" 
+    @change="touchedFields.surface = true"
+  />
+</FormField>
 
 
-        <FormField label="Paredes">
-          <FormCheckRadioGroup
-            v-model="form.walls"
-            name="paredes-radio"
-            type="radio"
-            :options="{ blindex: 'Blindex', cemento: 'Cemento' }"
-          />
-        </FormField>
-
+<FormField label="Paredes">
+  <FormCheckRadioGroup
+    v-model="form.walls"
+    name="paredes-radio"
+    type="radio"
+    :options="{ blindex: 'Blindex', cemento: 'Cemento' }"
+    :class="{ 'border-red-500': touchedFields.walls && validateField('walls') }"
+    :error="touchedFields.surface && validateField('surface')" 
+    @change="touchedFields.walls = true"
+  />
+</FormField>
         </div>
 
         
@@ -163,3 +272,14 @@ onMounted(async () => {
     </SectionMain>
   </LayoutAuthenticated>
 </template>
+
+
+<style>
+.error {
+  border: 1px solid red;
+}
+
+.error-message {
+  color: red;
+}
+</style>

@@ -24,7 +24,8 @@ const props = defineProps({
   modelValue: {
     type: [Array, String, Number, Boolean],
     default: null
-  }
+  },
+  error:Boolean
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -38,7 +39,7 @@ const computedValue = computed({
 </script>
 
 <template>
-  <div class="flex justify-start flex-wrap -mb-3" :class="{ 'flex-col': isColumn }">
+  <div :class="['flex justify-start flex-wrap -mb-3', { 'flex-col': isColumn }, { 'border-red-500': error }]">
     <FormCheckRadio
       v-for="(value, key) in options"
       :key="key"

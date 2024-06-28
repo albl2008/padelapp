@@ -14,6 +14,7 @@
   import { useShiftsStore } from '@/stores/shifts';
   import dayjs from 'dayjs';
   import router from '@/router';
+  import GenerateShifts from './GenerateShifts.vue'
 
   const configStore = useConfigStore()
   const shiftsStore = useShiftsStore()
@@ -25,7 +26,11 @@
   const emit = defineEmits();
 
   const isModalActive = ref(false);
+  const isCreatingShifts = ref(false);
   const isModalDangerActive = ref(false);
+  const shiftsOnClick = ref([]);
+  const exists = ref(false)
+  const createMessage = ref('');
   const event = ref(null)
 
   const notification = computed(() => shiftsStore.notification);
@@ -60,6 +65,7 @@ function titleTurno(number){
     datesSet: handleDatesSet,
     eventClick: handleEventClick,
     
+    
     eventRender: function (info) {
     // Modify the rendering of each event here
     info.el.style.backgroundColor = '#FFFFFF';
@@ -68,22 +74,50 @@ function titleTurno(number){
 
   const displayShifts = () => {
   const shifts = shiftsStore.shifts;
-  debugger
   if (!shifts || shifts.length === 0) return [];
-  
-  const events = shifts.map((shift,index) => {
-    let i = index % configStore.config[0].shiftsPerDay;
+  // Create a Map to track shifts per hour
+  const shiftMap = new Map();
+
+  // Iterate over shifts and add the first shift of each hour to the Map
+  const filteredShifts = shifts.filter(shift => {
+    const dateHour = `${shift.date}-${new Date(shift.start).getHours()}`;
+    if (!shiftMap.has(dateHour)) {
+      shiftMap.set(dateHour, true);
+      return true;
+    }
+    return false;
+  });
+
+  // Map the filtered shifts to events
+  const events = filteredShifts.map((shift, index) => {
+    const shiftsByDay = getShiftsByDateAndHour(shift.date, new Date(shift.start).getHours());
+    const lengthByDauy = shiftsByDay.length
+    let color = '#FFFFFF';
+    let cont = 0
+    for (const shift of shiftsByDay) {
+      if (shift.status.id === 0){
+        cont ++
+      }
+    }
+    if (cont === lengthByDauy){
+      color = '#00FF00'
+    } else if (cont > 0 && cont < lengthByDauy){
+      color = '#FFFF00'
+    } else if (cont === 0){
+      color = '#FF0000'
+    }
     return {
-      title: `${titleTurno(i+1)}`,
-      color: shift.status.id === 1 ? '#3633FF' : '#6BFF33',
+      title: ``,
+      color: color,
       start: shift.start,
       end: shift.end,
-      extendedProps:{
+      extendedProps: {
         shiftId: shift.id,
         date: shift.date,
         start: shift.start,
         end: shift.end,
-        tolerance: shift.tolerance
+        tolerance: shift.tolerance,
+        court: shift.court
       }
     };
   });
@@ -93,13 +127,31 @@ function titleTurno(number){
 
 
 
+const getShiftsByDateAndHour = (date, hour) => {
+  const shifts = shiftsStore.shifts;
+  if (!shifts || shifts.length === 0) return [];
+  
+  // Filter shifts by date and hour
+  return shifts.filter(shift => {
+    const shiftHour = new Date(shift.start).getHours();
+    return shift.date === date && shiftHour === hour;
+  });
+};
+
 function handleEventClick(eventInfo) {
   // Handle the event click here
   console.log('Event clicked:', eventInfo);
 
- isModalDangerActive.value = true
- event.value= eventInfo.event
+  const clickedDate = eventInfo.event.extendedProps.date;
+  const clickedHour = new Date(eventInfo.event.start).getHours();
+  const shiftsForDayAndHour = getShiftsByDateAndHour(clickedDate, clickedHour);
+
+  console.log('Shifts for the day and hour:', shiftsForDayAndHour);
+
+  isModalDangerActive.value = true;
+  shiftsOnClick.value = shiftsForDayAndHour
 }
+
 
 
 const cancel = () => {
@@ -108,6 +160,10 @@ const cancel = () => {
 
 const cancelModal = () => {
     isModalActive.value = false
+}
+
+const cancelCreate = () => {
+    isCreatingShifts.value = false
 }
 
 watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShifts]) => {
@@ -134,26 +190,71 @@ watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShif
   }
 });
 
-const selectedCourt = (court,shift) => {
-  debugger
-  const shiftId = shift.shiftId
-  router.push(`/edit-shift/${shiftId}/${court}`)
+const selectedCourt = (shiftId) => {
+  
+  router.push(`/edit-shift/${shiftId}`)
 };
 
 const confirmCreateTurnos = async () => {
+
+    try {
+
       const config = configStore.config[0];
-  debugger
+      debugger
+
+      if (!config) {
+        console.error('Config not available');
+        shiftsStore.setNotification({ message: 'Debe cargar una configuracion para crear turnos', type: 'info' });
+        return
+      }
       const secondDayOfMonth = firstDayOfMonth.value.add(1, 'month');
       await createShiftsMonth(secondDayOfMonth.format('MM-DD-YYYY'),config);
-      cancelModal()
-      shiftsStore.setNotification({ message: 'Se volvieron a crear los turnos correctamente', type: 'info' });
+      shiftsStore.setNotification({ message: 'Se crearon los turnos correctamente', type: 'success' });
       await shiftsStore.fetchShifts();
       calendarOptions.value.events = displayShifts();
+      isCreatingShifts.value = false
+    
+
+    } catch (error){
+      isCreatingShifts.value = false
+    shiftsStore.setNotification({ message: 'Error' + error, type: 'danger' });
+    console.error('Error creating shifts:', error);
+    }
+     
 };
 
 const dismissNotifications = () => {
   shiftsStore.resetNotification();
 };
+
+const getShifts = async () => {
+ try {
+
+  const config = configStore.config[0];
+    if (!config) {
+      console.error('Config not available');
+      return;
+    }
+    delete config.id
+    delete config.shiftPrice
+    delete config.user
+    const secondDayOfMonth = firstDayOfMonth.value.add(1, 'month');
+    exists.value = await getShiftsMonth(secondDayOfMonth.format('MM-DD-YYYY'))
+    console.log(exists.value.data)
+    if (exists.value.data === true){
+      createMessage.value ='Ya existen turnos para ese mes, desea generarlos nuevamente?'
+      console.log('ya estan creados')
+      isCreatingShifts.value = true
+    } else {
+      createMessage.value = '¿Deseas generar los turnos para este mes?'
+      isCreatingShifts.value = true
+    }
+
+ } catch (error) {
+   console.error('Error fetching shifts:', error);
+ }
+
+}
 
   const createShifts = async () => {
   try {
@@ -164,27 +265,32 @@ const dismissNotifications = () => {
     }
     delete config.id
     delete config.shiftPrice
+    delete config.user
     const secondDayOfMonth = firstDayOfMonth.value.add(1, 'month');
     const exists = await getShiftsMonth(secondDayOfMonth.format('MM-DD-YYYY'))
 
     if (exists.data === true){
+      createMessage.value ='Ya existen turnos para ese mes, desea generarlos nuevamente?'
       console.log('ya estan creados')
-      isModalActive.value = true
+      isCreatingShifts.value = true
     } else {
-      const secondDayOfMonth = firstDayOfMonth.value.add(1, 'month');
-      await createShiftsMonth(secondDayOfMonth.format('MM-DD-YYYY'),config);
-      shiftsStore.setNotification({ message: 'Se crearon los turnos correctamente', type: 'success' });
+      isCreatingShifts.value = true
+      createMessage.value = '¿Deseas generar los turnos para este mes?'
+      
       await shiftsStore.fetchShifts();
       calendarOptions.value.events = displayShifts();
+      isCreatingShifts.value = false
     }
+
+ 
 
     
     
 
   } catch (error) {
-    if (error.code="ERR_BAD_REQUEST"){
-      
-    }
+    
+    isCreatingShifts.value = false
+    shiftsStore.setNotification({ message: 'Error' + error, type: 'danger' });
     console.error('Error creating shifts:', error);
   }
 };
@@ -198,26 +304,27 @@ const dismissNotifications = () => {
         <b>{{ notification.message }}</b>
       </NotificationBar>
         <BaseButtons>
-            <BaseButton color="info" outline label="Crear Mes" @click="createShifts" />
+            <BaseButton color="info" outline label="Crear Mes" @click="getShifts" />
         </BaseButtons>
         
         <FullCalendar :options='calendarOptions' />
         
-          <CardBoxModal v-model="isModalActive" :has-cancel="false" title="Event Details">
-            <EditConfirmation
-              v-if="isModalActive"
-              v-model:isActive="isModalActive"
-              :confirmation-message="'Existen turnos creados para este mes. Desea generarlos nuevamente?'"
+          <CardBoxModal v-model="isCreatingShifts" :has-cancel="false" title="Generar turnos">
+            <GenerateShifts
+              v-if="isCreatingShifts"
+              v-model:isActive="isCreatingShifts"
+              :confirmation-message="createMessage"
               @confirm="confirmCreateTurnos()"
-              @cancel="cancelModal()"
+              @cancel="cancelCreate()"
           />
+
         </CardBoxModal>
         <CardBoxModal v-model="isModalDangerActive" title="Agendar Turno">
           <EditConfirmation
               v-if="isModalDangerActive"
               v-model:isActive="isModalDangerActive"
-              :item="event.shiftId"
-              @confirm="selectedCourt($event,event.extendedProps)"
+              :events="shiftsOnClick"
+              @confirm="selectedCourt($event)"
               @cancel="cancel"
           />
   </CardBoxModal>

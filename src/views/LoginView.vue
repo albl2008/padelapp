@@ -48,7 +48,7 @@ const submit = async () => {
 
     if (loginSuccess) {
       console.log('Login correcto')
-      const lastVisitedURL = authStore.getLastVisitedURL;
+      const lastVisitedURL = authStore.lastVisitedURL;
           if (lastVisitedURL) {
               router.push(lastVisitedURL);
           } else {
