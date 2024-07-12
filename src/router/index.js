@@ -88,6 +88,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Extras'
+    },
+    path: '/addons/:idShift',
+    name: 'addons',
+    component: () => import('@/views/addons/AddonView.vue')
+  },
+  {
+    meta: {
       title: 'Forms'
     },
     path: '/forms',

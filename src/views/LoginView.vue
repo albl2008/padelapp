@@ -12,7 +12,7 @@ import NotificationBar from '@/components/NotificationBar.vue'
 import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutGuest from '@/layouts/LayoutGuest.vue'
 import { useAuthStore } from '@/stores/auth'
-import { getLastVisitedURL } from '@/api/interceptor'
+import { getLastVisitedURL, setLastVisitedURL } from '@/api/interceptor'
 
 const form = reactive({
   email: 'alvaroblanco10@gmail.com',
@@ -35,34 +35,49 @@ watch(notification, (newNotification) => {
 });
 
 onMounted(  () => {
-                                                                             
+   if (isLoggedIn.value) {
+      router.push('/dashboard');
+   }                                                       
 })
 
 const submit = async () => {
   try {
     
-    const loginSuccess = await authStore.login({
+    const loginResponse = await authStore.login({
       email: form.email,
       password: form.pass
     });
 
-    if (loginSuccess) {
+    if (loginResponse === true) {
+      debugger
       console.log('Login correcto')
-      const lastVisitedURL = authStore.lastVisitedURL;
+      isLoggedIn.value = true
+      const lastVisitedURL = getLastVisitedURL()
           if (lastVisitedURL) {
               router.push(lastVisitedURL);
           } else {
               router.push('/dashboard');
           }
+      authStore.resetNotification();
     } else {
+      debugger
+      setLastVisitedURL(null);
+      const error = loginResponse
+      if (error.response.data.code === 401){
+        authStore.setNotification({ message: 'Email o contraseña incorrecto', type: 'danger' });
+      } else {
+        authStore.setNotification({ message: 'Error al iniciar sesión. Por favor, intenta de nuevo.', type: 'danger' });
+      }
       // Handle login failure
-      console.log('error en inicio de sesion')
       
-   
-      console.error('Login failed');
+      
+      
+      
     }
   } catch (error) {
+    debugger
     // Handle errors
+    authStore.setNotification({ message: 'Error al iniciar sesión. Por favor, intenta de nuevo.', type: 'danger' });
     console.error('Login failed:', error);
   }
 }

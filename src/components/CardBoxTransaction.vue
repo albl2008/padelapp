@@ -9,7 +9,6 @@ import IconRounded from '@/components/IconRounded.vue'
 const props = defineProps({
   amount: {
     type: Number,
-    required: true
   },
   date: {
     type: String,
@@ -17,9 +16,12 @@ const props = defineProps({
   },
   business: {
     type: String,
-    required: true
   },
   type: {
+    type: String,
+    required: true
+  },
+  title: {
     type: String,
     required: true
   },
@@ -34,12 +36,12 @@ const props = defineProps({
 })
 
 const icon = computed(() => {
-  if (props.type === 'Agendado') {
+  if (props.type === 'booked') {
     return {
       icon: mdiCalendar,
       type: 'warning'
     }
-  } else if (props.type === 'Disponible') {
+  } else if (props.type === 'available') {
     return {
       icon: mdiClock,
       type: 'success'
@@ -64,7 +66,7 @@ const icon = computed(() => {
       <BaseLevel type="justify-start">
         <IconRounded :icon="icon.icon" :color="icon.type" class="md:mr-6" />
         <div class="text-center space-y-1 md:text-left md:mr-6">
-          <h4 class="text-xl">{{ amount }}</h4>
+          <h4 class="text-xl">{{ title }}</h4>
           <p class="text-gray-500 dark:text-slate-400">
             <b>{{ date }}</b> Duracion {{ business }}
           </p>
@@ -75,7 +77,7 @@ const icon = computed(() => {
           {{ name }}
         </p>
         <div>
-          <PillTag :color="icon.type" :label="type" small />
+          <PillTag :color="icon.type" :label="type === 'booked' ? 'Agendado' : 'Disponible'" small />
         </div>
       </div>
     </BaseLevel>

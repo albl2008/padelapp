@@ -1,8 +1,9 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { mdiAccount, mdiAsterisk } from '@mdi/js'
 import SectionFullScreen from '@/components/SectionFullScreen.vue'
+import NotificationBar from '@/components/NotificationBar.vue'
 import CardBox from '@/components/CardBox.vue'
 import FormField from '@/components/FormField.vue'
 import FormControl from '@/components/FormControl.vue'
@@ -10,6 +11,11 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutGuest from '@/layouts/LayoutGuest.vue'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+import { register } from '@/api/auth'
+
+
+const authStore = useAuthStore()
 
 const form = reactive({
   name: '',
@@ -22,28 +28,53 @@ const router = useRouter()
 
 const submit = async() => {
     try {
-          const response = await axios.post('http://localhost:3000/v1/auth/register', {
+          const body = {
             name: form.name,
             email: form.email,
             password: form.password,
-          });
-  
+          };
+
+          const response = await register(body);
+          debugger
+          if (response.status === 201) {
+           
+            authStore.setNotification({ message: 'Registro exitoso. Se envio un email para confirmar la cuenta.', type: 'info' });
+            router.push('/login')
+            
+          }
           // Handle the response as needed
-          console.log('Registration successful:', response.data);
-          router.push('/login')
+          
         } catch (error) {
+          debugger
           // Handle errors
-          console.error('Registration failed:', error);
+          console.error('Registration failed:', error.response);
+          if (error.response.data.code === 400 && error.response.data.message === 'password must contain at least 1 letter and 1 number' ){
+            authStore.setNotification({ message: 'La contraseña debe contener al menos 1 letra y 1 número', type: 'danger' });
+          } else if (error.response.data.code === 400 && error.response.data.message === 'Email already taken' ){
+            authStore.setNotification({ message: 'Error al registrar. El email ya esta registrado.', type: 'danger' });
+          } else {
+            authStore.setNotification({ message: 'Error al registrar. Por favor, intenta de nuevo.', type: 'danger' });
+          }
+          
         }
  
 }
+
+const notification = computed(() => authStore.notification);
+
+const dismissNotifications = () => {
+  authStore.resetNotification();
+};
+
 </script>
 
 <template>
   <LayoutGuest>
     <SectionFullScreen v-slot="{ cardClass }" bg="purplePink">
       <CardBox :class="cardClass" is-form @submit.prevent="submit">
-        <FormField label="Name" help="Please enter your name">
+        <NotificationBar v-if="notification" :color="notification.type" @close="courtsStore.resetNotification()" :dismissCallback="dismissNotifications">
+          <b>{{ notification.message }}</b>
+        </NotificationBar> <FormField label="Nombre" help="Ingrese su nombre">
           <FormControl
             v-model="form.name"
             :icon="mdiAccount"
@@ -52,7 +83,7 @@ const submit = async() => {
           />
         </FormField>
 
-        <FormField label="Email" help="Please enter your email">
+        <FormField label="Email" help="Ingrese su email">
           <FormControl
             v-model="form.email"
             :icon="mdiAccount"
@@ -62,7 +93,7 @@ const submit = async() => {
           />
         </FormField>
 
-        <FormField label="Password" help="Please enter your password">
+        <FormField label="Password" help="Ingrese su contraseña">
           <FormControl
             v-model="form.password"
             :icon="mdiAsterisk"

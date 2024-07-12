@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import router from '../router/index';
+import { useAuthStore } from '@/stores/auth';
 
 let lastVisitedURL = null;
 
@@ -27,7 +28,14 @@ axios.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // Token expired or unauthorized, redirect to login page
+      debugger
       setLastVisitedURL(router.currentRoute.value.fullPath);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+
+      const authStore = useAuthStore();
+      authStore.setLoggedIn(false);
       router.push('/login');
     }
     return Promise.reject(error);

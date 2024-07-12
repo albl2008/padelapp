@@ -19,6 +19,7 @@ import { useCourtsStore } from '@/stores/courts'
 import { config } from '@fullcalendar/core/internal'
 import { useConfigStore } from '@/stores/config'
 import { getCourtById } from '@/api/courts'
+import PillTag from '@/components/PillTag.vue'
 
 
 
@@ -26,6 +27,10 @@ const shiftsStore = useShiftsStore();
 const configStore = useConfigStore();
 const courtsStore = useCourtsStore();
 
+
+const shiftStatus = ref(null);
+const completeShift = ref(null);
+const totalPriceAddons = ref(0);
 
 const form = reactive({
   date: '',
@@ -39,6 +44,8 @@ const form = reactive({
 })
 
 const isEditMode = ref(false);
+
+const idShift = router.currentRoute.value.params.idShift;
 
 
 const submit = async () => {
@@ -89,12 +96,17 @@ onMounted(async () => {
     // Fetch court details based on the id and populate the form
     try {
       const shift = await getShiftById(shiftId);
+      completeShift.value = shift.data
+      if (completeShift.value.addons && completeShift.value.addons.length > 0) {
+        totalPriceAddons.value = calculateTotal(completeShift.value.addons)
+      }
       console.log(shift)
+      shiftStatus.value = shift.data.status
       form.date = new Date(shift.data.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'UTC' });
       form.start = new Date(shift.data.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'}) 
       form.end = new Date(shift.data.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'})
       form.tolerance = shift.data.tolerance ? shift.data.tolerance + ' min' : configStore.config[0].tolerance + ' min'
-      form.price = shift.data.price ? shift.data.price : configStore.config[0].shiftPrice
+      form.price = totalPriceAddons.value ? totalPriceAddons.value + shift.data.price : shift.data.price ? shift.data.price : configStore.config[0].shiftPrice
       form.court = shift.data.court.number
       form.client = shift.data.client ? shift.data.client : ''
     } catch (error) {
@@ -103,6 +115,20 @@ onMounted(async () => {
     }
   }
 });
+
+const redirectToAddons = () => {
+  router.push('/addons/' + idShift)
+}
+
+const calculateTotal = (addons) => {
+  let total = 0
+  addons.forEach(addon => {
+    total += addon.price
+  })
+  form.price = total
+  return total
+
+}
 
 
 // const formStatusWithHeader = ref(true)
@@ -161,6 +187,21 @@ onMounted(async () => {
         <FormField label="Cancha">
           <FormControl v-model="form.court" disabled="true" />
         </FormField>
+
+        <div v-if="completeShift && completeShift.addons.length > 0" class="flex">
+            <p class="w-1/3">Adicionales:</p>
+            <div v-for="addon in completeShift.addons" :key="addon" class="ml-2" >
+              <PillTag  type="info" :label="addon.description" />
+            </div>
+          </div>
+          <div v-if="completeShift && completeShift.addons.length > 0" class="flex mt-4 ">
+            <PillTag  type="success" :label="'$'+totalPriceAddons " />
+          </div>
+
+        <div class="flex justify-end mt-4">
+          
+          <BaseButton v-if="shiftStatus && shiftStatus.id === 1" type="button" color="info" outline label="+Adicionales" @click="redirectToAddons" />
+        </div>
         </div>
         <!-- <FormField label="Superficie">
           <FormCheckRadioGroup
@@ -175,7 +216,7 @@ onMounted(async () => {
         <BaseDivider />
         <template #footer>
           <BaseButtons>
-            <BaseButton type="submit" color="info" :label="isEditMode ? 'Editar' : 'Crear'" />
+            <BaseButton type="submit" color="info" :label="isEditMode ? 'Reservar' : 'Crear'" />
             <BaseButton color="info" outline label="Volver" @click="backToCalendar" />
           </BaseButtons>
         </template>

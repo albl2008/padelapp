@@ -5,6 +5,7 @@ const COURTS_URL = `http://localhost:3000/v1/courts`; // Adjust the base URL acc
 
 
 export const getAllCourts = () => axios.get(COURTS_URL);
+export const createAllCourts = (configId) => axios.post(`${COURTS_URL}/create-all/${configId}`)
 export const getCourtById = (courtId) => axios.get(`${COURTS_URL}/${courtId}`);
 export const createCourt = (courtData) => axios.post(COURTS_URL, courtData);
 export const updateCourt = (courtId, courtData) => axios.patch(`${COURTS_URL}/${courtId}`, courtData);

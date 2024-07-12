@@ -31,18 +31,24 @@ import CardBoxTransaction from '@/components/CardBoxTransaction.vue'
 import CardBoxClient from '@/components/CardBoxClient.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
-import SectionBannerStarOnGitHub from '@/components/SectionBannerStarOnGitHub.vue'
+import BannerCourtsInUse from '@/components/BannerCourtsInUse.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCourtsStore } from '@/stores/courts'
 import { useRouter } from 'vue-router'
 import { useShiftsStore } from '@/stores/shifts';
 import dayjs from 'dayjs'
-import { getShiftsWeek } from '@/api/shifts'
+import { getShiftsWeek, getShiftsNextDays } from '@/api/shifts'
+import { getAllConfig } from '@/api/config'
+import { useConfigStore } from '@/stores/config'
+import 'vue3-carousel/dist/carousel.css'
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
+
 
 
 const authStore = useAuthStore()
 const courtsStore = useCourtsStore()
 const shiftsStore = useShiftsStore()
+const configStore = useConfigStore()
 
 const thisWeek = ref(0)
 const thisWeekBooked = ref(0)
@@ -55,30 +61,40 @@ const tomorrowShifts = ref([])
 const totalTomorrow = ref(0)
 const todayShifts = ref([])
 const courts = ref([]);
+const config = ref(null)
 const router = useRouter()
 const chartData = ref(null)
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const fillChartData = () => {
-  chartData.value = chartConfig.sampleChartData()
-}
+
 
 
 onMounted( async() => {
   getPercents()
+  getConfig()
 })
+
+const getConfig = async() => {
+  const configs = await getAllConfig()
+  config.value = configs.data.results[0]
+  console.log(configs.data.results[0])
+}
+
+
 
 const getPercents = async (shifts) => {
   const todayDate = dayjs().format('MM-DD-YYYY')
   const weekShifts = await getShiftsWeek(todayDate)
+  const next7daysShifts = await getNextDays(7)
+  console.log(next7daysShifts)
   console.log(weekShifts.data)
-  weekShifts.data.forEach(element => {
+  next7daysShifts.data.forEach(element => {
     thisWeek.value += 1
     if (element.status.id === 1){
       thisWeekBooked.value += 1
     }
   })
   const tomorrowDate = dayjs().add(1, 'day')
-  weekShifts.data.forEach(element => {
+  next7daysShifts.data.forEach(element => {
     if (element.date.split('T')[0] === tomorrowDate.format('YYYY-MM-DD')){
       tomorrow.value += 1
       tomorrowShifts.value.push(element)
@@ -101,6 +117,19 @@ const getPercents = async (shifts) => {
   
 }
 
+const getNextDays = async (limit) => {
+  
+  const body = {
+    today: dayjs().toDate(),
+    limit: limit
+    
+  }
+  const shifts = await getShiftsNextDays(body)
+  console.log(shifts)
+  return shifts
+ 
+}
+
 const mainStore = useMainStore()
 const fetchCourts = async () => {
   courts.value = await courtsStore.fetchCourts();
@@ -114,9 +143,8 @@ const handleClick = (shiftId) => {
   router.push(`/book-shift/${shiftId}`)
 }
 
-const clientBarItems = computed(() => mainStore.clients.slice(0, 4))
 
-const transactionBarItems = computed(() => mainStore.history)
+
 </script>
 
 <template>
@@ -156,12 +184,11 @@ const transactionBarItems = computed(() => mainStore.history)
         <CardBoxWidget
           :trend="thisWeek !== 0 ? (thisWeekBooked/thisWeek * 100).toFixed(2) + '%' : 'Cerrado'"
           :trend-type="thisWeekBooked/thisWeek * 100 > 50 ? 'up' : 'down'"
-          :color="tthisWeekBooked/thisWeek * 100 > 50 ? 'text-emerald-500' : 'text-red-500'"
+          :color="thisWeekBooked/thisWeek * 100 > 50 ? 'text-emerald-500' : 'text-red-500'"
           :icon="mdiCalendar"
           :number="thisWeek"
           :total="thisWeekBooked"
-          prefix="Total: "
-          label="Esta semana"
+          label="Proximos 7 dias"
         />
         <!-- <CardBoxWidget
           trend="Overflow"
@@ -175,58 +202,86 @@ const transactionBarItems = computed(() => mainStore.history)
       </div>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div v-if="config" class="flex flex-col justify-between ">
         
-        <div class="flex flex-col justify-between ">
-          <p class="text-center text-lg p-3">Hoy</p>
-          <div
-            class="mb-3"
-            v-if="todayShifts.length > 0"
-            v-for="shift in todayShifts"
-            :key="shift.id"
-            @click="handleClick(shift.id)"
-            style="cursor: pointer;"
-          >
-          <CardBoxTransaction
-            :amount="dayjs(shift.start, 'GMT').format('HH:mm') + ' Cancha: ' + shift.court.number"
-            :date="dayjs(shift.date).format('DD-MM-YYYY')"
-            :business="convertToMinutes(shift.duration) + ' min'"
-            :type="shift.status.id === 1 ? 'Agendado' : 'Disponible'"
-            :name="shift.client ? shift.client : ''"
-            :account="dayjs(shift.date).format('DD-MM-YYYY')"
-          />
+        <Carousel  v-if="todayShifts.length > 0">
+            <Slide v-for="court of config.courtsQuantity" :key="court">
+                <div class="">
+                  <p class="text-2xl text-gray-500 dark:text-slate-400 mb-3">Hoy - <span class="text-yellow-500">Cancha: {{ court }}</span></p>
+                    <div
+                        class="mb-3"
+                        v-if="todayShifts.length > 0"
+                        v-for="shift in todayShifts"
+                        :key="shift.id"
+                        @click="handleClick(shift.id)"
+                        style="cursor: pointer;"
+                    >
+                        <CardBoxTransaction
+                            v-if="court === shift.court.number"
+                            :title="new Date(shift.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'}) "
+                            :date="dayjs(shift.date).format('DD-MM-YYYY')"
+                            :business="convertToMinutes(shift.duration) + ' min'"
+                            :type="shift.status.sta"
+                            :name="shift.client ? shift.client : ''"
+                            :account="dayjs(shift.date).format('DD-MM-YYYY')"
+                        />
+                    </div>
+                </div>
+            </Slide>
+            <template #addons>
+                <Navigation />
+                <Pagination />
+            </template>
+        </Carousel>
+        <div v-if="todayShifts.length === 0"> No hay turnos programados para hoy</div>
     </div>
-    <div v-if="todayShifts.length === 0"> No hay turnos programados para hoy</div>
-        </div>
-        
-        <div class="flex flex-col justify-between">
-          <p class="text-center text-lg p-3">Mañana</p>
-          <div class="flex flex-col justify-between">
-          
-          <div
-            class="mb-3"
-            v-if="tomorrowShifts.length > 0"
-            v-for="shift in tomorrowShifts"
-            :key="shift.id"
-            @click="handleClick(shift.id)"
-            style="cursor: pointer;"
-          >
-          <CardBoxTransaction
-            :amount="dayjs(shift.start, 'GMT').format('HH:mm') + ' Cancha: ' + shift.court.number"
-            :date="dayjs(shift.date).format('DD-MM-YYYY')"
-            :business="convertToMinutes(shift.duration) + ' min'"
-            :type="shift.status.id === 1 ? 'Agendado' : 'Disponible'"
-            :name="shift.client ? shift.client : ''"
-            :account="dayjs(shift.date).format('DD-MM-YYYY')"
-          />
+    <div v-if="config" class="flex flex-col justify-between">
+       
+        <Carousel v-if="tomorrowShifts.length > 0">
+            <Slide v-for="court of config.courtsQuantity" :key="court">
+                <div class="">
+                  <p class="text-2xl text-gray-500 dark:text-slate-400 mb-3">Mañana - <span class="text-yellow-500">Cancha: {{ court }}</span></p>
+                    <div
+                        class="mb-3"
+                        v-if="tomorrowShifts.length > 0"
+                        v-for="shift in tomorrowShifts"
+                        :key="shift.id"
+                        @click="handleClick(shift.id)"
+                        style="cursor: pointer;"
+                    >
+                        <CardBoxTransaction
+                            v-if="court === shift.court.number"
+                            :title="new Date(shift.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'}) "
+                            :date="dayjs(shift.date).format('DD-MM-YYYY')"
+                            :business="convertToMinutes(shift.duration) + ' min'"
+                            :type="shift.status.sta"
+                            :name="shift.client ? shift.client : ''"
+                            :account="dayjs(shift.date).format('DD-MM-YYYY')"
+                        />
+                    </div>
+                </div>
+            </Slide>
+            <template #addons>
+                <Navigation />
+                <Pagination />
+            </template>
+        </Carousel>
+        <div v-if="tomorrowShifts.length === 0"> No hay turnos programados para mañana</div>
     </div>
-    <div v-if="tomorrow.length === 0"> No hay turnos programados para mañana</div>
-        </div>
-        </div>
+</div>
+      
+  <div v-if="config && todayShifts && todayShifts.length > 0">
+    <BannerCourtsInUse class="mt-6 mb-6"  :shifts="todayShifts"/>
+  </div>
+     
+
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+
       </div>
 
-      <SectionBannerStarOnGitHub class="mt-6 mb-6" />
-
-      <SectionTitleLineWithButton :icon="mdiChartPie" title="Trends overview">
+      <!-- <SectionTitleLineWithButton :icon="mdiChartPie" title="Trends overview">
         <BaseButton :icon="mdiReload" color="whiteDark" @click="fillChartData" />
       </SectionTitleLineWithButton>
 
@@ -244,7 +299,7 @@ const transactionBarItems = computed(() => mainStore.history)
 
       <CardBox has-table>
         <TableSampleClients />
-      </CardBox>
+      </CardBox> -->
     </SectionMain>
   </LayoutAuthenticated>
 </template>

@@ -12,17 +12,22 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
-import { createCourt, getCourtById, updateCourt } from '@/api/courts'
+import { createCourt, getAllCourts, getCourtById, updateCourt } from '@/api/courts'
 import NotificationBar from '@/components/NotificationBar.vue'
 import router from '@/router'
 import { useCourtsStore } from '@/stores/courts';
+import { getAllConfig } from '@/api/config'
+import includes from 'lodash/includes'
+
 
 import joi from 'joi'
 
 
 const courtsStore = useCourtsStore();
 
-const courts = computed(() => courtsStore.courts)
+const courts = ref([])
+
+const config = ref([]);
 
 
 const form = reactive({
@@ -43,8 +48,8 @@ const touchedFields = reactive({
 const schema = joi.object({
   name: joi.string().required(),
   number: joi.number().required(),
-  surface: joi.string().required(),
-  walls: joi.string().required(),
+  surface: joi.string().valid('cemento').valid('sintetico').required(),
+  walls: joi.string().valid('cemento').valid('blindex').required(),
 });
 
 
@@ -62,12 +67,12 @@ const submit = async () => {
   if (error) {
     console.log(error)
     Object.keys(touchedFields).forEach(field => {
-      touchedFields.field = true
+      touchedFields[field] = true
     })
     Object.keys(form).forEach(field => {
       validateField(field)
     })
-    courtsStore.setNotification({ message: 'Todos los campos son requeridos', type: 'danger' });
+    courtsStore.setNotification({ message: error, type: 'danger' });
     return
   }
 
@@ -93,6 +98,8 @@ const submit = async () => {
     router.push('/courts');
   } catch (error) {
     console.error('Error creating court:', error);
+    debugger
+    courtsStore.setNotification({ message: 'Error al crear la cancha' + error.response.data.message, type: 'danger' });
     // Handle error if needed
   }
 };
@@ -103,12 +110,13 @@ const backToCurts = () => {
 
 
 onMounted(async () => {
-  await fetchCourts();
-  await fetchConfig()
+  
+  
   // Check if an id parameter is present in the URL
   const courtId = router.currentRoute.value.params.idCourt;
   if (courtId) {
     isEditMode.value = true;
+    debugger
 
     // Fetch court details based on the id and populate the form
     try {
@@ -122,36 +130,40 @@ onMounted(async () => {
       console.error('Error fetching court details:', error);
       // Handle error if needed
     }
+  } else {
+    await getCourts()
+    await getConfig()
+    form.number = getCourtNumber(courts.value, config.value)
+    form.name = 'C'+form.number
   }
-
+  
   
 });
 
+const getCourts = async() => {
+  const courtsData = await getAllCourts()
+  courts.value = courtsData.data.results
+
+}
+
+const getConfig = async () => {
+  const configData = await getAllConfig()
+  config.value = configData.data.results[0]
+}
 
 
-const fetchCourts = async () => {
-  courts.value = await courtsStore.fetchCourts();
-  const lastCourtNumber = getLastCourtNumber(courts.value)
-  form.number = lastCourtNumber
-};
-const getLastCourtNumber = (courts) => {
+
+const getCourtNumber = (courtsArray, configArray) => {
   debugger
-
-  if (courts.length === 0){
-    return 1
-  }
-  let min = 0
-  for (const court of courts){
+  const actualNumbers = courtsArray.map(court => court.number)
+  
+  for (let i=0; i < configArray.courtsQuantity; i++) {
     debugger
-    min = court.number
-    if (min > court.number){
-      min = court.number
+    if (!includes(actualNumbers, i+1)) {
+      return i+1
     }
 
-    
   }
-  const nextNumber = min + 1
-  return nextNumber
 
 
 
@@ -174,18 +186,6 @@ watch(form, (newForm) => {
   })
 }, { deep: true })
 
-
-// const formStatusWithHeader = ref(true)
-
-// const formStatusCurrent = ref(0)
-
-// const formStatusOptions = ['info', 'success', 'danger', 'warning']
-
-// const formStatusSubmit = () => {
-//   formStatusCurrent.value = formStatusOptions[formStatusCurrent.value + 1]
-//     ? formStatusCurrent.value + 1
-//     : 0
-// }
 </script>
 
 <template>

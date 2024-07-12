@@ -1,5 +1,7 @@
 // auth.js in stores folder
 import { defineStore } from 'pinia';
+import { useMainStore } from './main';
+import { useDarkModeStore } from './darkMode';
 import { login as apiLogin, logout as apiLogout, forgotPassword as apiForgotPassword } from '@/api/auth';
 
 export const useAuthStore = defineStore({
@@ -18,20 +20,31 @@ export const useAuthStore = defineStore({
   
         if (storedUser && storedAccessToken && storedRefreshToken) {
           // If user information is found, set the user and isLoggedIn
+          const mainStore = useMainStore();
+          debugger
+          const darkModeStore = useDarkModeStore();
+          darkModeStore.set(true);
           this.setUser(JSON.parse(storedUser));
+          mainStore.setUser(JSON.parse(storedUser));
           this.setLoggedIn(true);
         }
       },
 
     async login({ email, password }) {
       try {
+        const mainStore = useMainStore();
+        const darkModeStore = useDarkModeStore();
+        
+
         const response = await apiLogin({ email, password });
         const { user, tokens } = response.data;
 
 
         if (response.status === 200){
           this.setUser(user);
+          mainStore.setUser(user);
           this.setLoggedIn(true);
+          darkModeStore.set(true);
   
           // Save user and tokens to local storage
           localStorage.setItem('user', JSON.stringify(user));
@@ -50,11 +63,8 @@ export const useAuthStore = defineStore({
 
         
       } catch (error) {
-        if (error.response.status === 401) [
-          this.setNotification({ message: 'Contraseña o email incorrecto', type: 'danger' })
-        ]
         console.error('Login failed:', error);
-        return false; // Login failed
+        return error; // Login failed
       }
     },
     async forgotPassword({ email }) {
@@ -71,19 +81,18 @@ export const useAuthStore = defineStore({
     async logout() {
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        const response = await apiLogout(refreshToken);
-        if (response.status === 200){
+        const body = {
+          refreshToken: refreshToken
+        }
+        await apiLogout(body);
         localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
 
         this.setUser(null);
         this.setLoggedIn(false);
-        
-
-        return true; // Logout successful
-        }
-        // Clear user-related information from local storage
+      
+        return true; 
         
       } catch (error) {
         console.error('Logout failed:', error);

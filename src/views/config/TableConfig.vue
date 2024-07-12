@@ -137,10 +137,10 @@ const checked = (isChecked, config) => {
   <table>
   <thead>
     <tr>
-     
-      <th>Duracion Turno</th>
-      <th>Precio Turno</th>
-      <th>Tolerancia</th>
+      <th>Cantidad de canchas</th>
+      <th>Duracion (h)</th>
+      <th>Precio $</th>
+      <th>Tolerancia (min)</th>
       <th>Primer Turno</th>
       <th>Turnos por dia</th>
       <th>Dias operativos</th>
@@ -149,7 +149,10 @@ const checked = (isChecked, config) => {
   </thead>
   <tbody>
     <tr v-for="config in itemsPaginated" :key="config.id">
-      
+
+      <td data-label="Shift Duration">
+        {{ config.courtsQuantity }}
+      </td>
       <td data-label="Shift Duration">
         {{ config.shiftDuration }}
       </td>

@@ -10,6 +10,7 @@ import axios from 'axios';
 import { useRouter } from 'vue-router'
 import { logout } from '@/api/auth';
 import { setLastVisitedURL } from '@/api/interceptor';
+import { useAuthStore } from '@/stores/auth';
 
 
 
@@ -20,23 +21,21 @@ defineProps({
   }
 })
 
+const authStore = useAuthStore()
+
 const router = useRouter()
 
 const performLogout = async () => {
   try {
-    const refreshToken = localStorage.getItem('refreshToken');
+    // const refreshToken = localStorage.getItem('refreshToken');
 
-    const body = {
-      refreshToken: refreshToken
-    }
-    // Make a request to the logout endpoint using the imported function
-    await logout(body);
-
-    // Clear user-related information from local storage
-    localStorage.removeItem('user');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-
+    // const body = {
+    //   refreshToken: refreshToken
+    // }
+    // // Make a request to the logout endpoint using the imported function
+    // await logout(body);
+    await authStore.logout()
+    
     setLastVisitedURL(null);
     // Redirect to the login page or another appropriate page
     router.push('/');

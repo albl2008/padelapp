@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { useCourtsStore } from '@/stores/courts';
 import { mdiEye, mdiTrashCan, mdiPencil } from '@mdi/js';
 import CardBoxModal from '@/components/CardBoxModal.vue';
@@ -8,7 +8,7 @@ import BaseLevel from '@/components/BaseLevel.vue';
 import BaseButtons from '@/components/BaseButtons.vue';
 import BaseButton from '@/components/BaseButton.vue';
 import UserAvatar from '@/components/UserAvatar.vue';
-import { deleteCourt } from '@/api/courts';
+import { deleteCourt, getAllCourts } from '@/api/courts';
 import DeleteConfirmation from '@/components/DeleteConfirmation.vue'
 import router from '@/router';
 
@@ -18,9 +18,16 @@ const items = computed(() => courtsStore.courts);
 
 const emit = defineEmits();
 
+const props = defineProps({
+  reload: {
+    type: Boolean,
+    default: false
+  }
+})
+
 const courtIdToDelete = ref(null);
 const courtDeleted = ref(false);
-const court = ref(null);
+const courts = ref([]);
 const isDeleting = ref(false);
 const deletionError = ref(null);
 
@@ -33,6 +40,7 @@ const confirmDelete = async () => {
   try {
     // Perform the deletion
     await deleteCourt(courtIdToDelete.value);
+    await getCourts()
     emit('court-deleted', true);
     // Reset state and close the modal after successful deletion
     isModalDangerActive.value = false;
@@ -40,7 +48,6 @@ const confirmDelete = async () => {
     courtIdToDelete.value = null;
     
     // Optionally, you can trigger a refresh or update the courts list
-    await courtsStore.fetchCourts();
     courtsStore.setNotification({ message: 'Cancha eliminada correctamente', type: 'danger' });
   } catch (error) {
     // Handle deletion error
@@ -49,6 +56,7 @@ const confirmDelete = async () => {
     isDeleting.value = false;
   }
 };
+
 
 
 const isModalActive = ref(false);
@@ -91,6 +99,24 @@ const remove = (arr, cb) => {
   return newArr;
 };
 
+watch(props, () => {
+  if (props.reload) {
+    getCourts();
+  }
+});
+
+onMounted(async () => {
+  const courtsData = await getAllCourts()
+  courts.value = courtsData.data.results
+  debugger
+})
+
+const getCourts = async () => {
+  courts.value = []
+  const courtsData = await getAllCourts()
+  courts.value = courtsData.data.results
+};
+
 const courtToDelete = (court) => {
   courtIdToDelete.value = court.id;
   isModalDangerActive.value = true;
@@ -131,16 +157,15 @@ const checked = (isChecked, court) => {
   <thead>
     <tr>
      
-      <th>Name</th>
-      <th>Number</th>
-      <th>Surface</th>
-      <th>Walls</th>
-      <th>In Use</th>
+      <th>Nombre</th>
+      <th>N°</th>
+      <th>Superficie</th>
+      <th>Paredes</th>
       <th />
     </tr>
   </thead>
   <tbody>
-    <tr v-for="court in itemsPaginated" :key="court.id">
+    <tr v-for="court in courts" :key="court.id">
       
       <td data-label="Name">
         {{ court.name }}
@@ -153,9 +178,6 @@ const checked = (isChecked, court) => {
       </td>
       <td data-label="Walls">
         {{ court.walls }}
-      </td>
-      <td data-label="In Use">
-        {{ court.inUse }}
       </td>
       <td class="before:hidden lg:w-1 whitespace-nowrap">
         <!-- Adjust the buttons or actions based on your requirements -->

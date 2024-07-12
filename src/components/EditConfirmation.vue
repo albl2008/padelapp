@@ -12,7 +12,7 @@
     },
     confirmColor: {
       type: String,
-      default: 'info',
+      default: 'warning',
     },
     hasCancel: {
       type: Boolean,
@@ -30,6 +30,7 @@
       type: Array,
       default: () => [],
     },
+    
   });
   
   const emit = defineEmits();
@@ -56,15 +57,21 @@
     <div v-if="isActive">
       <CardBox>
         <template #footer>
-          <BaseButtons>
-            <div v-for="item in events">
+          <BaseButtons class="flex" >
+            <div class="" v-for="item in events">
               <BaseButton :label="'Cancha: ' + item.court.number + ''" :color="item.status.id === 0 ? 'success' : confirmColor" @click="confirm(item.id)" />
             </div>
-            <BaseButton v-if="hasCancel" label="Cancelar" :color="cancelColor" outline @click="cancel" />
+            
+            
           </BaseButtons>
+
+          
         </template>
+        
       </CardBox>
-     
+      <div class="flex items-center justify-end p-6">
+              <BaseButton v-if="hasCancel" label="Cancelar" :color="cancelColor" outline @click="cancel" />
+            </div>
       
     </div>
   </template>

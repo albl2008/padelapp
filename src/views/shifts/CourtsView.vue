@@ -2,7 +2,7 @@
 import { mdiTableBorder, mdiTableOff, mdiGithub, mdiPlus } from '@mdi/js'
 import SectionMain from '@/components/SectionMain.vue'
 import NotificationBar from '@/components/NotificationBar.vue'
-import TableCourts from '@/components/courts/TableCourts.vue'
+import TableCourts from '@/views/courts/TableCourts.vue'
 import CardBox from '@/components/CardBox.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'

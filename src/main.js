@@ -3,6 +3,7 @@ import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
 import { useMainStore } from '@/stores/main.js';
+import { useDarkModeStore } from '@/stores/darkMode.js';
 import { useCourtsStore } from '@/stores/courts';
 import { useConfigStore } from '@/stores/config';
 import { useAuthStore } from '@/stores/auth';
@@ -28,7 +29,16 @@ const authStore = useAuthStore(pinia);
 //const authStore = useAuthStore(pinia); // Initialize the Auth store
 
 // Fetch sample data
-
+// const darkModeStore = useDarkModeStore(pinia)
+// console.log('darkMode: ', localStorage.getItem('darkMode'))
+// if (
+//   (!localStorage.key['darkMode'])
+//   || (localStorage.getItem('darkMode') === '0')
+// ) {
+//   debugger
+//   darkModeStore.isEnabled = true
+//   darkModeStore.set()
+// }
 
 // Initialize authentication state
 
@@ -36,13 +46,14 @@ authStore.initializeAuth();
 
 if (authStore.isLoggedIn) {
   
-  const mainStore = useMainStore(pinia);
-  mainStore.fetchSampleClients();
-  mainStore.fetchSampleHistory();
+  //router.push('/dashboard');
+  // darkModeStore.isEnabled = true
+  // darkModeStore.set()
 } else {
   // The user is not authenticated, you can redirect or show a login form
   // For example, you might want to redirect to the login page
   console.log('NO ESTA LOGUEADO')
+  authStore.isLoggedIn = false
   router.push('/login');
 }
 
@@ -53,17 +64,9 @@ if (authStore.isLoggedIn) {
 // Make sure to uncomment localStorage block in src/stores/darkMode.js
 // Dark mode
 // Uncomment, if you'd like to restore persisted darkMode setting, or use `prefers-color-scheme: dark`. Make sure to uncomment localStorage block in src/stores/darkMode.js
-import { useDarkModeStore } from './stores/darkMode'
 
-const darkModeStore = useDarkModeStore(pinia)
-console.log('darkMode: ', localStorage.getItem('darkMode'))
-if (
-  (!localStorage.key['darkMode'] && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
-  localStorage.getItem === '1'
-) {
- 
-  darkModeStore.set(true)
-}
+
+
 
 // Default title tag
 const defaultDocumentTitle = 'appadel';

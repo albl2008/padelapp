@@ -5,8 +5,14 @@ import CardBox from '@/components/CardBox.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutGuest from '@/layouts/LayoutGuest.vue'
-import axios from 'axios'
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
+import NotificationBar from '@/components/NotificationBar.vue'
+import { useAuthStore } from '@/stores/auth'
+import { verify } from '@/api/auth';
+
+
+const authStore = useAuthStore()
+
 
 
 const router = useRouter()
@@ -31,13 +37,19 @@ const submit = async () => {
 
     
 
-    const response = await axios.post(`http://localhost:3000/v1/auth/verify-email?token=${token}`);
-
+    const response = await verify(token);
+    debugger
     // Handle the response as needed
-    console.log('Registration successful:', response.data);
-    router.push('/login');
+    if (response.status === 204){
+      const timeout = setTimeout(() => {
+        authStore.setNotification({ message: `Email verificado. Redirigiendo en ${timeout/1000} `, type: 'success' });
+      },3000)
+     
+      router.push('/login');
+    }
   } catch (error) {
     // Handle errors
+    authStore.setNotification({ message: 'Error al verificar. Por favor, intenta de nuevo.', type: 'danger' });
     console.error('Registration failed:', error);
   }
 }
@@ -45,6 +57,12 @@ const submit = async () => {
 onMounted(() => {
   getTokenFromURL()
 });
+
+const dismissNotifications = () => {
+  authStore.resetNotification();
+};
+
+const notification = computed(() => authStore.notification);
 
 
 
@@ -54,6 +72,9 @@ onMounted(() => {
   <LayoutGuest>
     <SectionFullScreen  bg="purplePink">
         <CardBox :class="cardClass" is-form @submit.prevent="submit">
+            <NotificationBar v-if="notification" :color="notification.type" @close="authStore.resetNotification"  :dismissCallback="dismissNotifications">
+            <b>{{ notification.message }}</b>
+            </NotificationBar>
           <BaseButtons>
             <BaseButton type="submit" color="info" label="Register" />
             <BaseButton to="/dashboard" color="info" outline label="Back" />

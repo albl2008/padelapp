@@ -26,6 +26,9 @@ const shiftsStore = useShiftsStore();
 const configStore = useConfigStore();
 const courtsStore = useCourtsStore();
 
+const courtId = ref(null);
+const start = ref(null);
+
 
 const form = reactive({
   date: '',
@@ -35,28 +38,34 @@ const form = reactive({
   tolerance: '',
   court: '',
   client:'',
-  price: ''
+  price: '',
+  fixShift: false
 })
 
 const isEditMode = ref(false);
 
 
 const submit = async () => {
+  debugger
   try {
     const shift = {
-      court: form.court.id,
+      fixed: form.fixShift,
       client: form.client,
-      price: form.price
+      price: form.price,
+      court: courtId.value,
+      start: start.value,
     }
     if (isEditMode.value) {
       // If in edit mode, update the court
+      debugger
       await bookShift(router.currentRoute.value.params.idShift, shift);
       shiftsStore.setNotification({ message: 'Turno asginado correctamente', type: 'info' });
 
     } else {
+      console.log('No hay id de turno')
       // If in create mode, create a new court
-      await createCourt(court);
-      courtsStore.setNotification({ message: 'Cancha creada correctamente', type: 'success' });
+    //   await createCourt(court);
+    //   courtsStore.setNotification({ message: 'Cancha creada correctamente', type: 'success' });
     }
     router.push('/calendar');
   } catch (error) {
@@ -89,18 +98,22 @@ onMounted(async () => {
     // Fetch court details based on the id and populate the form
     try {
       const shift = await getShiftById(shiftId);
-      console.log(shift)
+      courtId.value = shift.data.court.id
+      start.value = shift.data.start
       form.date = new Date(shift.data.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'UTC' });
       form.start = new Date(shift.data.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'}) 
       form.end = new Date(shift.data.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'})
       form.tolerance = shift.data.tolerance ? shift.data.tolerance + ' min' : configStore.config[0].tolerance + ' min'
       form.price = shift.data.price ? shift.data.price : configStore.config[0].shiftPrice
       form.court = shift.data.court.number
+      form.fixShift = shift.data.fixed
       form.client = shift.data.client ? shift.data.client : ''
     } catch (error) {
       console.error('Error fetching shift details:', error);
       // Handle error if needed
     }
+  } else {
+    isEditMode.value = false
   }
 });
 
@@ -156,6 +169,15 @@ onMounted(async () => {
 
         <FormField label="Cliente">
           <FormControl v-model="form.client"  />
+        </FormField>
+
+        <FormField label="Fijo">
+          <FormCheckRadioGroup
+          v-model="form.fixShift"
+          type="switch"
+          name="fix-shift-switch"
+          :options="{ outline: form.fixShift ? 'Si' : 'No' }"
+        />
         </FormField>
 
         <FormField label="Cancha">

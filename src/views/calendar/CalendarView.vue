@@ -15,6 +15,9 @@
   import dayjs from 'dayjs';
   import router from '@/router';
   import GenerateShifts from './GenerateShifts.vue'
+import { Calendar } from '@fullcalendar/core'
+import esLocale from '@fullcalendar/core/locales/es'
+
 
   const configStore = useConfigStore()
   const shiftsStore = useShiftsStore()
@@ -31,7 +34,8 @@
   const shiftsOnClick = ref([]);
   const exists = ref(false)
   const createMessage = ref('');
-  const event = ref(null)
+  const eventClicked = ref(null)
+  const eventInfoTitle = ref('')
 
   const notification = computed(() => shiftsStore.notification);
   const handleDatesSet = ({ view }) => {
@@ -61,14 +65,32 @@ function titleTurno(number){
     events: [
       { title: 'Meeting', start: new Date() }
     ],
-    
+    themeSystem: 'bootstrap5',
+    locale: esLocale,
     datesSet: handleDatesSet,
     eventClick: handleEventClick,
-    
-    
-    eventRender: function (info) {
-    // Modify the rendering of each event here
-    info.el.style.backgroundColor = '#FFFFFF';
+    dayMaxEventRows: 4,
+    moreLinkClick: 'popover',
+    moreLinkClick: handleMoreLinkClick,
+    eventContent: function (info) {
+            var eventBackgroundColor = info.event.backgroundColor // Change to your desired background color
+            var eventTextColor = 'black'; // Change to your desired text color
+          
+            // Create the HTML structure with a rectangular background shape
+            var html =
+              '<div class="overflow-hidden" style="background-color: ' +
+              eventBackgroundColor +
+              '; color: ' +
+              eventTextColor +
+              '; padding: 5px; border-radius: 5px; font-weight: bold;">' +
+              dayjs(info.event.start).format('HH:mm') +
+              '</div>';
+          
+            return { html: html };
+          },
+
+    moreLinkContent: function(arg) {
+    return `+${arg.num} mas`; // customize the "view more" button text
   }
   });
 
@@ -91,7 +113,7 @@ function titleTurno(number){
   // Map the filtered shifts to events
   const events = filteredShifts.map((shift, index) => {
     const shiftsByDay = getShiftsByDateAndHour(shift.date, new Date(shift.start).getHours());
-    const lengthByDauy = shiftsByDay.length
+    const lengthByDay = shiftsByDay.length
     let color = '#FFFFFF';
     let cont = 0
     for (const shift of shiftsByDay) {
@@ -99,10 +121,10 @@ function titleTurno(number){
         cont ++
       }
     }
-    if (cont === lengthByDauy){
-      color = '#00FF00'
-    } else if (cont > 0 && cont < lengthByDauy){
-      color = '#FFFF00'
+    if (cont === lengthByDay){
+      color = '#0D9B38'
+    } else if (cont > 0 && cont < lengthByDay){
+      color = '#F1EF2E'
     } else if (cont === 0){
       color = '#FF0000'
     }
@@ -141,7 +163,9 @@ const getShiftsByDateAndHour = (date, hour) => {
 function handleEventClick(eventInfo) {
   // Handle the event click here
   console.log('Event clicked:', eventInfo);
-
+  eventClicked.value = eventInfo.event.extendedProps
+  eventInfoTitle.value = `Agendar turno ${dayjs(eventClicked.value.start).format('DD-MM-YYYY HH:mm')} - ${dayjs(eventClicked.value.end).format('HH:mm')}`
+  console.log(eventInfo.value)
   const clickedDate = eventInfo.event.extendedProps.date;
   const clickedHour = new Date(eventInfo.event.start).getHours();
   const shiftsForDayAndHour = getShiftsByDateAndHour(clickedDate, clickedHour);
@@ -150,6 +174,11 @@ function handleEventClick(eventInfo) {
 
   isModalDangerActive.value = true;
   shiftsOnClick.value = shiftsForDayAndHour
+
+  const popover = eventInfo.el.closest('.fc-popover');
+  if (popover) {
+    popover.style.display = 'none';
+  }
 }
 
 
@@ -172,10 +201,12 @@ watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShif
     calendarOptions.value.events = displayShifts();
   }
 });
-
+let calendarInstance = null;
 
   onMounted(async () => {
   try {
+    calendarInstance = new Calendar(document.getElementById('calendar'), calendarOptions.value);
+ 
     // Fetch config data when the component is mounted
     await configStore.fetchConfig();
     await shiftsStore.fetchShifts();
@@ -189,6 +220,14 @@ watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShif
     console.error('Error fetching data:', error);
   }
 });
+
+function handleMoreLinkClick(arg) {
+  const popover = document.querySelector('.fc-popover');
+  if (popover) {
+    popover.style.display = 'none';
+  }
+  return 'popover';
+}
 
 const selectedCourt = (shiftId) => {
   
@@ -306,8 +345,10 @@ const getShifts = async () => {
         <BaseButtons>
             <BaseButton color="info" outline label="Crear Mes" @click="getShifts" />
         </BaseButtons>
+        <div id="calendar" class="calendar-container">
+          <FullCalendar :options='calendarOptions' />
+        </div>
         
-        <FullCalendar :options='calendarOptions' />
         
           <CardBoxModal v-model="isCreatingShifts" :has-cancel="false" title="Generar turnos">
             <GenerateShifts
@@ -319,13 +360,14 @@ const getShifts = async () => {
           />
 
         </CardBoxModal>
-        <CardBoxModal v-model="isModalDangerActive" title="Agendar Turno">
+        <CardBoxModal v-model="isModalDangerActive" :title="eventInfoTitle">
           <EditConfirmation
               v-if="isModalDangerActive"
               v-model:isActive="isModalDangerActive"
               :events="shiftsOnClick"
               @confirm="selectedCourt($event)"
               @cancel="cancel"
+              
           />
   </CardBoxModal>
 
@@ -334,3 +376,167 @@ const getShifts = async () => {
       </SectionMain>
     </LayoutAuthenticated>
   </template>
+
+<style scoped>
+.calendar-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+    .calendar-container {
+        padding: 10px;
+    }
+}
+.custom-event {
+    display: block; 
+    width: 100%; /* Ensure full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Ensure the event container takes full width */
+:deep(.fc-daygrid-event-harness) {
+    width: 100%;
+}
+
+/* Ensure the entire cell background changes */
+:deep(.fc-daygrid-day) {
+    background-color: inherit;
+}
+
+:deep(.fc-daygrid-day.fc-day-today) {
+    background-color: inherit;
+}
+
+:deep(.fc-daygrid-day.fc-day-past) {
+    background-color: inherit;
+}
+
+:deep(.fc-daygrid-day.fc-day-future) {
+    background-color: inherit;
+}
+
+:deep(.fc-daygrid-day-events) {
+    width: 100%;
+}
+
+:deep(.fc-daygrid-event) {
+    width: 100%;
+}
+
+/* Existing styles */
+:deep(.fc-more-popover) {
+  max-width: 300px;
+}
+
+:deep(.fc-more) {
+  background-color: #007bff;
+  color: white;
+  padding: 2px 5px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+:deep(.fc-popover) {
+  background-color: #334155;
+  color: #ffffff;
+  border: 1px solid #1e293b;
+}
+
+:deep(.fc-popover-header) {
+  background-color: #1e293b;
+  color: #ffffff;
+  border-bottom: 1px solid #1e293b;
+}
+
+:deep(.fc-popover-body) {
+  background-color: #334155;
+  color: #ffffff;
+}
+
+:deep(.fc-popover .fc-daygrid-event) {
+  background-color: #1e293b;
+  padding: 5px;
+  border: 3px solid #1e293b;
+  color: #ffffff;
+}
+
+:deep(.fc-popover .fc-more-popover) {
+  background-color: #334155;
+  color: #ffffff;
+  border: 1px solid #1e293b;
+}
+
+/* Change border color of day cells to black */
+:deep(.fc-daygrid-day-frame) {
+    border: 1px solid 1e293b; /* Set border color to 1e293b */
+}
+
+/* Ensure other relevant elements have the border color applied */
+:deep(.fc-col-header-cell) {
+    border: 1px solid 1e293b; /* Set border color for header cells */
+}
+
+:deep(.fc-daygrid-day-top) {
+    border-bottom: 1px solid 1e293b; /* Set bottom border for day top */
+}
+
+/* Optional: Ensure background color changes are consistent */
+:deep(.fc-daygrid-day) {
+    background-color: inherit;
+}
+
+:deep(.fc-daygrid-day.fc-day-today) {
+    background-color: inherit;
+}
+
+:deep(.fc-daygrid-day.fc-day-past) {
+    background-color: inherit;
+}
+
+:deep(.fc-daygrid-day.fc-day-future) {
+    background-color: inherit;
+}
+
+:deep(.fc-view-harness) {
+    border-color: #1e293b; 
+}
+
+:deep(.fc-daygrid-day-frame) {
+    border: 1px solid #1e293b; /* Set border color to #1e293b */
+}
+
+/* Change border color for header cells to #1e293b */
+:deep(.fc-col-header-cell) {
+    border: 1px solid #334155; /* Set border color for header cells to #1e293b */
+}
+
+/* Change bottom border for day top to #1e293b */
+:deep(.fc-daygrid-day-top) {
+    border-bottom: 1px solid #1e293b; /* Set bottom border for day top to #1e293b */
+}
+
+/* Optional: Ensure background color changes are consistent */
+:deep(.fc-daygrid-day) {
+    background-color: inherit; /* Inherit from parent */
+}
+
+:deep(.fc-daygrid-day.fc-day-today) {
+    background-color: inherit; /* Inherit from parent */
+}
+
+:deep(.fc-daygrid-day.fc-day-past) {
+    background-color: inherit; /* Inherit from parent */
+}
+
+:deep(.fc-daygrid-day.fc-day-future) {
+    background-color: inherit; /* Inherit from parent */
+}
+
+:deep(.fc-scrollgrid){
+  border-color: #334155 !important;
+}
+
+
+</style>
