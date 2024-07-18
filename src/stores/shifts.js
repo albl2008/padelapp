@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { getAllShifts } from '@/api/shifts';
+import { getAllShifts, getShiftsNextDays } from '@/api/shifts';
 
 export const useShiftsStore = defineStore({
   id: 'shifts',
@@ -15,6 +15,14 @@ export const useShiftsStore = defineStore({
       } catch (error) {
         console.error('Error fetching shifts:', error);
       }
+    },
+    async getNextShifts(body) {
+      try {
+        const response = await getShiftsNextDays(body);
+        this.setShifts(response.data);
+      } catch (error) {
+        console.error('Error fetching shifts:', error);
+      } 
     },
     setShifts(shifts) {
       this.shifts = shifts;

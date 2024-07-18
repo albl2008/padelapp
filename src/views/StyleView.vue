@@ -30,6 +30,11 @@ const login = () => {
   // Redirect to /forms when the button is clicked
   router.push('/login');
 };
+
+const register = () => {
+  
+  router.push('/register');
+};
 </script>
 
 <template>
@@ -43,6 +48,9 @@ const login = () => {
         </h1>
         <div class="ml-0"> 
           <BaseButton  :icon="mdiLogin" label="Login" color="primary" @click="login" />
+        </div>
+        <div class="ml-0"> 
+          <BaseButton  :icon="mdiLogin" label="Register" color="primary" @click="register" />
         </div>
         <h2 class="text-xl md:text-xl text-center text-white mb-12">
           Style switching with a single

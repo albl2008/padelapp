@@ -16,7 +16,7 @@ import { getLastVisitedURL, setLastVisitedURL } from '@/api/interceptor'
 
 const form = reactive({
   email: 'alvaroblanco10@gmail.com',
-  pass: 'sopa0102',
+  pass: 'locolope1',
   remember: true
 })
 
@@ -54,6 +54,9 @@ const submit = async () => {
       isLoggedIn.value = true
       const lastVisitedURL = getLastVisitedURL()
           if (lastVisitedURL) {
+              if (lastVisitedURL.includes('/login')){
+                router.push('/dashboard');
+              }
               router.push(lastVisitedURL);
           } else {
               router.push('/dashboard');
@@ -126,6 +129,7 @@ const dismissNotifications = () => {
           <BaseButtons>
             <BaseButton type="submit" color="info" label="Login" />
             <BaseButton to="/forgot-password" color="info" outline label="Forgot Password" />
+            <BaseButton to="/register" color="info" outline label="Register" />
           </BaseButtons>
         </template>
       </CardBox>

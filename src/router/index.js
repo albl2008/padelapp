@@ -34,7 +34,31 @@ const routes = [
     },
     path: '/verify-email/:token/',
     name: 'verify-email',
-    component: VerifyView
+    component: () => import('@/views/VerifyView.vue')
+  },
+  {
+    meta: {
+      title: 'Club'
+    },
+    path: '/club',
+    name: 'club',
+    component: () => import('@/views/clubs/ClubView.vue')
+  },
+  {
+    meta: {
+      title: 'Crear Club'
+    },
+    path: '/new-club',
+    name: 'new-club',
+    component: () => import('@/views/clubs/CreateClub.vue')
+  },
+  {
+    meta: {
+      title: 'Edit Club'
+    },
+    path: '/edit-club/:idClub',
+    name: 'tu-club',
+    component: () => import('@/views/clubs/CreateClub.vue')
   },
   {
     meta: {

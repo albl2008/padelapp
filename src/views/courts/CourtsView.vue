@@ -20,6 +20,7 @@ import { getAllConfig } from '@/api/config'
 
 const courtsStore = useCourtsStore();
 const configStore = useConfigStore();
+const existsConfig = ref(false);
 const config = ref([]);
 const courts = ref([]);
 const allCourtsCreated = ref(false);
@@ -45,6 +46,10 @@ watch(courts
 const getConfig = async () => {
   const configData = await getAllConfig()
   config.value = configData.data.results[0]
+  if (config.value) {
+    existsConfig.value = true
+  }
+
 }
 
 const getCourts = async () => {
@@ -89,6 +94,7 @@ const dismissNotifications = () => {
 
 const createCourtsAuto = async() => {
   await createAllCourts(config.value.id)
+  await getCourts()
   reloadTable.value = true
 }
 
@@ -107,8 +113,11 @@ const createCourtsAuto = async() => {
           rounded-full
           small
         /> -->
-        <BaseButton v-if="!allCourtsCreated"  :icon="mdiPlus" label="Cancha" color="primary" @click="createCourt" />
-        <BaseButton v-if="courts.length === 0"  :icon="mdiPlus" label="Crear automaticamente" color="primary" @click="createCourtsAuto()" />
+        <div v-if="existsConfig">
+          <BaseButton class="mr-4" v-if="!allCourtsCreated"  :icon="mdiPlus" label="Cancha" color="primary" @click="createCourt" />
+          <BaseButton v-if="courts.length === 0"  :icon="mdiPlus" label="Crear automaticamente" color="primary" @click="createCourtsAuto()" />
+        </div>
+        
       </SectionTitleLineWithButton>
       <NotificationBar v-if="notification" :color="notification.type" :dismissCallback="dismissNotifications">
         <b>{{ notification.message }}</b>

@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 export const useDarkModeStore = defineStore('darkMode', () => {
   const isEnabled = ref(false)
-  debugger
+  
   function set(payload = null) {
     isEnabled.value = payload !== null ? payload : !isEnabled.value
     

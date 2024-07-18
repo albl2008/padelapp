@@ -8,7 +8,9 @@ export const useAuthStore = defineStore({
   id: 'auth',
   state: () => ({
     user: null,
+    userId: null,
     isLoggedIn: false,
+    activeClub: null,
     notification: null,
   }),
   actions: {
@@ -21,12 +23,16 @@ export const useAuthStore = defineStore({
         if (storedUser && storedAccessToken && storedRefreshToken) {
           // If user information is found, set the user and isLoggedIn
           const mainStore = useMainStore();
-          debugger
+          
           const darkModeStore = useDarkModeStore();
           darkModeStore.set(true);
+          this.userId = JSON.parse(storedUser).id
+          this.setActiveClub(JSON.parse(storedUser).activeClub);
           this.setUser(JSON.parse(storedUser));
           mainStore.setUser(JSON.parse(storedUser));
           this.setLoggedIn(true);
+        } else {
+          this.setLoggedIn(false);
         }
       },
 
@@ -42,9 +48,11 @@ export const useAuthStore = defineStore({
 
         if (response.status === 200){
           this.setUser(user);
+          this.setActiveClub(user.activeClub);
           mainStore.setUser(user);
           this.setLoggedIn(true);
           darkModeStore.set(true);
+          this.userId = user.id
   
           // Save user and tokens to local storage
           localStorage.setItem('user', JSON.stringify(user));
@@ -90,6 +98,7 @@ export const useAuthStore = defineStore({
         localStorage.removeItem('refreshToken');
 
         this.setUser(null);
+        this.setActiveClub(null);
         this.setLoggedIn(false);
       
         return true; 
@@ -106,6 +115,9 @@ export const useAuthStore = defineStore({
       this.isLoggedIn = isLoggedIn;
     },
 
+    setActiveClub(clubId) {
+      this.activeClub = clubId;
+    },
     setNotification({ message, type }) {
       
       this.notification = { message, type };

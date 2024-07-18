@@ -1,6 +1,8 @@
 import {
   mdiAccountCircle,
   mdiMonitor,
+  mdiAccountGroup,
+  mdiShieldAccount,
   mdiGithub,
   mdiLock,
   mdiAlertCircle,
@@ -12,7 +14,8 @@ import {
   // mdiResponsive,
   mdiPalette,
   mdiReact,
-  mdiSettingsHelper
+  mdiSettingsHelper,
+  mdiCardsClub
 } from '@mdi/js'
 
 export default [
@@ -65,6 +68,11 @@ export default [
     to: '/profile',
     label: 'Profile',
     icon: mdiAccountCircle
+  },
+  {
+    to: '/club',
+    label: 'Club',
+    icon: mdiAccountGroup
   },
   // {
   //   to: '/login',

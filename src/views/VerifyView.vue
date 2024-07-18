@@ -42,10 +42,12 @@ const submit = async () => {
     // Handle the response as needed
     if (response.status === 204){
       const timeout = setTimeout(() => {
-        authStore.setNotification({ message: `Email verificado. Redirigiendo en ${timeout/1000} `, type: 'success' });
+        authStore.setNotification({ message: `Email verificado. Puede iniciar sesion `, type: 'success' });
+        router.push('/login');
       },3000)
+
      
-      router.push('/login');
+      authStore.resetNotification();
     }
   } catch (error) {
     // Handle errors

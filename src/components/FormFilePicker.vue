@@ -2,6 +2,7 @@
 import { mdiUpload } from '@mdi/js'
 import { computed, ref, watch } from 'vue'
 import BaseButton from '@/components/BaseButton.vue'
+import { createFile } from '@/api/files';
 
 const props = defineProps({
   modelValue: {
@@ -27,11 +28,13 @@ const props = defineProps({
   isRoundIcon: Boolean
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'url'])
 
 const root = ref(null)
 
 const file = ref(props.modelValue)
+
+const fileName = ref(null)
 
 const showFilename = computed(() => !props.isRoundIcon && file.value)
 
@@ -45,7 +48,7 @@ watch(modelValueProp, (value) => {
   }
 })
 
-const upload = (event) => {
+const upload = async (event) => {
   const value = event.target.files || event.dataTransfer.files
 
   file.value = value[0]
@@ -53,10 +56,17 @@ const upload = (event) => {
   emit('update:modelValue', file.value)
 
   // Use this as an example for handling file uploads
-  // let formData = new FormData()
-  // formData.append('file', file.value)
+   let formData = new FormData()
+   formData.append('file', file.value)
 
-  // const mediaStoreRoute = `/your-route/`
+  
+  const resp = await createFile(formData)
+
+  console.log(resp.data)
+
+  fileName.value = resp.data.originalName
+
+  emit('url', resp.data.filePath)
 
   // axios
   //   .post(mediaStoreRoute, formData, {
@@ -103,11 +113,11 @@ const upload = (event) => {
       />
     </label>
     <div
-      v-if="showFilename"
+      v-if="showFilename && fileName"
       class="px-4 py-2 bg-gray-100 dark:bg-slate-800 border-gray-200 dark:border-slate-700 border rounded-r"
     >
       <span class="text-ellipsis line-clamp-1">
-        {{ file.name }}
+        {{ fileName }}
       </span>
     </div>
   </div>

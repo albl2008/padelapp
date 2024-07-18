@@ -7,8 +7,10 @@ import { useDarkModeStore } from '@/stores/darkMode.js';
 import { useCourtsStore } from '@/stores/courts';
 import { useConfigStore } from '@/stores/config';
 import { useAuthStore } from '@/stores/auth';
+import { configDotenv } from "dotenv";
 import './css/main.css';
 import './api/interceptor'
+import { getLastVisitedURL } from './api/interceptor';
 
 
 // Init Pinia
@@ -17,8 +19,6 @@ const pinia = createPinia();
 // Create Vue app
 const app = createApp(App);
 app.use(router).use(pinia);
-
-
 
 // Init stores
 
@@ -53,8 +53,16 @@ if (authStore.isLoggedIn) {
   // The user is not authenticated, you can redirect or show a login form
   // For example, you might want to redirect to the login page
   console.log('NO ESTA LOGUEADO')
-  authStore.isLoggedIn = false
-  router.push('/login');
+  authStore.setLoggedIn(false);
+  const lastVisitedURL = getLastVisitedURL()
+  if (lastVisitedURL) {
+    if (lastVisitedURL.includes('/verify-email')){
+      router.push('/verify-email');
+  }else {
+    router.push('/login');
+  }
+}
+ 
 }
 
 // Dark mode logic...
