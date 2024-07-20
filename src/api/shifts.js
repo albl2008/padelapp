@@ -1,7 +1,7 @@
 import axios from './interceptor'
 
 
-const SHIFTS_URL = `http://localhost:3000/v1/shifts`; // Adjust the base URL according to your API structure
+const SHIFTS_URL = `${import.meta.env.VITE_API_BASE_URL}/v1/shifts`; // Adjust the base URL according to your API structure
 
 
 export const getAllShifts = () => axios.get(SHIFTS_URL);

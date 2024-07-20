@@ -1,9 +1,9 @@
 import axios from './interceptor'
 import router from '../router/index'
 
-const FILES_URL = `http://localhost:3000/v1/files`; // Adjust the base URL according to your API structure
+const FILES_URL = `${import.meta.env.VITE_API_BASE_URL}/v1/files`; // Adjust the base URL according to your API structure
 
-const GET_URL = `http://localhost:3000`;
+const GET_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 const headers = {
       'Content-Type': 'multipart/form-data'

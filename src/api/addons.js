@@ -1,7 +1,7 @@
 import axios from './interceptor'
 import router from '../router/index'
 
-const ADDONS_URL = `http://localhost:3000/v1/addons`; // Adjust the base URL according to your API structure
+const ADDONS_URL = `${import.meta.env.VITE_API_BASE_URL}/v1/addons`; // Adjust the base URL according to your API structure
 
 
 export const getAllAddons = () => axios.get(ADDONS_URL);

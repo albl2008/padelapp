@@ -1,7 +1,7 @@
 import axios from './interceptor'
 import router from '../router/index'
 
-const CONFIG_URL = `http://localhost:3000/v1/users`; // Adjust the base URL according to your API structure
+const CONFIG_URL = `${import.meta.env.VITE_API_BASE_URL}/v1/users`; // Adjust the base URL according to your API structure
 
 
 export const updateUser = (userId, body) => axios.patch(`${CONFIG_URL}/${userId}`, body);

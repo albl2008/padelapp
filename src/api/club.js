@@ -1,7 +1,7 @@
 import axios from './interceptor'
 import router from '../router/index'
 
-const CLUB_URL = `http://localhost:3000/v1/club`; // Adjust the base URL according to your API structure
+const CLUB_URL = `${import.meta.env.VITE_API_BASE_URL}/v1/club`; // Adjust the base URL according to your API structure
 
 
 export const getAllClubs = () => axios.get(CLUB_URL);

@@ -1,7 +1,7 @@
 import axios from './interceptor'
 import router from '../router/index'
 
-const COURTS_URL = `http://localhost:3000/v1/courts`; // Adjust the base URL according to your API structure
+const COURTS_URL = `${import.meta.env.VITE_API_BASE_URL}/v1/courts`; // Adjust the base URL according to your API structure
 
 
 export const getAllCourts = () => axios.get(COURTS_URL);
