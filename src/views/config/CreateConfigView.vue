@@ -21,10 +21,15 @@ import Multiselect from 'vue-multiselect'
 import '@vuepic/vue-datepicker/dist/main.css'
 import 'vue-multiselect/dist/vue-multiselect.css'
 import '@vuepic/vue-datepicker/dist/main.css'
+import { valid } from 'joi'
+import { useClubStore } from '@/stores/club'
+import { useNotificationStore } from '@/stores/notifications'
 
 
 
 const configStore = useConfigStore();
+const clubStore = useClubStore();
+const notificationStore = useNotificationStore();
 
 const notification = computed(() => configStore.notification);
 
@@ -53,6 +58,13 @@ const isEditMode = ref(false);
 const submit = async () => {
   try {
     debugger
+    const formValidation = validateForm(form);
+    if (!formValidation) {
+      return;
+    }
+
+
+
     const currentDate = new Date();
 
       // Set the hours, minutes, and seconds based on the given object
@@ -81,6 +93,9 @@ const submit = async () => {
       
     }
     router.push('/config');
+    notificationStore.getNotifications();
+    
+
   } catch (error) {
     configStore.setNotification({ message: 'Error creando configuracion:' + error, type: 'danger' });
     console.error('Error creating config:', error);
@@ -104,6 +119,16 @@ const convertDays = (selectedDays) => {
 }
 
 onMounted(async () => {
+  //get activeClub
+
+  const activeClub = await clubStore.getActiveClub();
+
+  if (!activeClub) {
+    configStore.setNotification({ message: 'No hay club activo. Debe asignar un club', type: 'danger' });
+  } else {
+    form.courtsQuantity = activeClub.courtsQuantity;
+  }
+
   // Check if an id parameter is present in the URL
   const configId = router.currentRoute.value.params.idConfig;
   debugger
@@ -124,7 +149,7 @@ onMounted(async () => {
       form.firstShift = {hours:hours, minutes:minutes}
       form.shiftsPerDay = configDetails.data.shiftsPerDay;
       form.workingDays = configDetails.data.operativeDays.map(dayIndex => days[dayIndex]);
-      form.courtsQuantity = configDetails.data.courtsQuantity;
+      form.courtsQuantity = activeClub.courtsQuantity;
       //form.inUse = configDetails.data.inUse;
     } catch (error) {
       console.error('Error fetching config details:', error);
@@ -132,6 +157,58 @@ onMounted(async () => {
     }
   }
 });
+
+const validateForm = (form) => {
+  let isValid = { field: '', message: '' };
+  let validations = []
+
+  if (!form.shiftDuration) {
+    isValid.field = 'shiftDuration';
+    isValid.message = 'La duración del turno es requerida';
+    validations.push(isValid)
+  }
+  if (!form.shiftPrice) {
+    isValid.field = 'shiftPrice';
+    isValid.message = 'El precio del turno es requerido';
+    validations.push(isValid)
+  }
+  if (!form.shiftsPerDay) {
+    isValid.field = 'shiftsPerDay';
+    isValid.message = 'La cantidad de turnos por dia es requerida';
+    validations.push(isValid)
+  }
+  if (!form.tolerance) {
+    isValid.field = 'tolerance';
+    isValid.message = 'La tolerancia es requerida';
+    validations.push(isValid)
+  }
+  if (!form.workingDays) {
+    isValid.field = 'workingDays';
+    isValid.message = 'Los dias de trabajo son requeridos';
+    validations.push(isValid)
+  }
+  if (!form.courtsQuantity) {
+    isValid.field = 'courtsQuantity';
+    isValid.message = 'La cantidad de canchas es requerida';
+    validations.push(isValid)
+  }
+
+  if (!form.firstShift) {
+    isValid.field = 'firstShift';
+    isValid.message = 'La hora de inicio es requerida';
+    validations.push(isValid)
+  }
+
+  if (validations.length > 0) {
+    if (validations.length > 3){
+      configStore.setNotification({ message: 'Hay campos requeridos en el formulario', type: 'danger' });
+    } else {
+      configStore.setNotification({ message: validations[0].message, type: 'danger' });
+    }
+    return false
+  }
+  return true
+}
 
 
 // const formStatusWithHeader = ref(true)
@@ -184,7 +261,7 @@ onMounted(async () => {
         </FormField>
 
         <FormField label="Cantidad de canchas">
-          <FormControl v-model="form.courtsQuantity"  type="number"/>
+          <FormControl v-model="form.courtsQuantity" disabled  type="number"/>
         </FormField>
 
         

@@ -12,6 +12,7 @@ import { deleteConfig } from '@/api/config';
 import DeleteConfirmation from '@/components/DeleteConfirmation.vue'
 import router from '@/router';
  import NotificationBar from '@/components/NotificationBar.vue'
+import { getAllShifts } from '@/api/shifts';
 
 const configsStore = useConfigStore();
 
@@ -25,6 +26,7 @@ const config = ref(null);
 const isDeleting = ref(false);
 const deletionError = ref(null);
 const notification = computed(() => configsStore.notification);
+const confirmationMessage = ref(null);
 
 const cancelDelete = () => {
     isModalDangerActive.value = false
@@ -93,9 +95,14 @@ const remove = (arr, cb) => {
   return newArr;
 };
 
-const configToDelete = (config) => {
+const configToDelete = async (config) => {
   configIdToDelete.value = config.id;
+  const shifts = await getAllShifts();
+  if (shifts.data.results.length > 0) {
+    confirmationMessage.value = 'Se eliminaran tambien las canchas y los turnos si los hay. ¿Deseas continuar?'
+  }
   isModalDangerActive.value = true;
+  
 };
 
 const configToEdit = (config) => {
@@ -129,6 +136,7 @@ const checked = (isChecked, config) => {
       v-if="isModalDangerActive"
       v-model:isActive="isModalDangerActive"
       :itemIdToDelete="configIdToDelete"
+      :confirmationMessage="confirmationMessage ? confirmationMessage : 'Seguro que quieres eliminar esta configuración?'"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
     />

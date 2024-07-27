@@ -1,5 +1,5 @@
 <script setup>
-import { mdiTableBorder, mdiTableOff, mdiGithub, mdiPlus } from '@mdi/js'
+import { mdiTableBorder, mdiTableOff, mdiGithub, mdiPlus, mdiTools } from '@mdi/js'
 import SectionMain from '@/components/SectionMain.vue'
 import NotificationBar from '@/components/NotificationBar.vue'
 import TableConfig from '@/views/config/TableConfig.vue'
@@ -57,7 +57,7 @@ watch(notification, (newNotification) => {
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton :icon="mdiTableBorder" title="Configuracion" main>
+      <SectionTitleLineWithButton :icon="mdiTools" title="Configuracion" main>
         <!-- <BaseButton
           href="https://github.com/justboil/admin-one-vue-tailwind"
           target="_blank"
@@ -67,7 +67,7 @@ watch(notification, (newNotification) => {
           rounded-full
           small
         /> -->
-        <BaseButton v-if="!configStore.config.length > 0" :icon="mdiPlus" label="Create Config" color="primary" @click="createConfig" />
+        <BaseButton v-if="!configStore.config.length > 0" :icon="mdiPlus" label="Configuracion" color="primary" @click="createConfig" />
 
       </SectionTitleLineWithButton>
       <NotificationBar v-if="notification" :color="notification.type" @close="configStore.resetNotification()" :dismissCallback="dismissNotifications">

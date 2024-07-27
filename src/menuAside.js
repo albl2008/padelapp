@@ -15,7 +15,9 @@ import {
   mdiPalette,
   mdiReact,
   mdiSettingsHelper,
-  mdiCardsClub
+  mdiCardsClub,
+  mdiTools,
+  mdiTableBorder
 } from '@mdi/js'
 
 export default [
@@ -25,9 +27,19 @@ export default [
     label: 'Dashboard'
   },
   {
+    to: '/club',
+    label: 'Club',
+    icon: mdiAccountGroup
+  },
+  {
+    to: '/config',
+    label: 'Config',
+    icon: mdiTools
+  },
+  {
     to: '/courts',
     label: 'Canchas',
-    icon: mdiPalette
+    icon: mdiTableBorder
   },
   // {
   //   to: '/tables',
@@ -39,11 +51,7 @@ export default [
     label: 'Calendario',
     icon: mdiCalendar
   },
-  {
-    to: '/config',
-    label: 'Config',
-    icon: mdiSettingsHelper
-  },
+ 
   // {
   //   to: '/forms',
   //   label: 'Forms',
@@ -69,11 +77,7 @@ export default [
     label: 'Profile',
     icon: mdiAccountCircle
   },
-  {
-    to: '/club',
-    label: 'Club',
-    icon: mdiAccountGroup
-  },
+  
   // {
   //   to: '/login',
   //   label: 'Login',

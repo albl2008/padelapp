@@ -1,5 +1,5 @@
 <script setup>
-import { mdiTableBorder, mdiTableOff, mdiGithub, mdiPlus } from '@mdi/js'
+import { mdiTableBorder, mdiTableOff, mdiAccountGroup, mdiPlus } from '@mdi/js'
 import SectionMain from '@/components/SectionMain.vue'
 import NotificationBar from '@/components/NotificationBar.vue'
 import TableClubs from '@/views/clubs/TableClubs.vue'
@@ -57,7 +57,7 @@ watch(notification, (newNotification) => {
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton :icon="mdiTableBorder" title="Club" main>
+      <SectionTitleLineWithButton :icon="mdiAccountGroup" title="Club" main>
         <!-- <BaseButton
           href="https://github.com/justboil/admin-one-vue-tailwind"
           target="_blank"

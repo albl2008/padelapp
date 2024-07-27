@@ -14,6 +14,9 @@ const props = defineProps({
     type: String,
     required: true
   },
+  businessStyle: {
+    type: String,
+  },
   business: {
     type: String,
   },
@@ -68,7 +71,7 @@ const icon = computed(() => {
         <div class="text-center space-y-1 md:text-left md:mr-6">
           <h4 class="text-xl">{{ title }}</h4>
           <p class="text-gray-500 dark:text-slate-400">
-            <b>{{ date }}</b> Duracion {{ business }}
+            <b>{{ date }}</b> - <span :class="businessStyle">{{ business }}</span>
           </p>
         </div>
       </BaseLevel>

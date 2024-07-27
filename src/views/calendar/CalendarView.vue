@@ -67,7 +67,7 @@ dayjs.tz.setDefault("America/Argentina/Buenos_Aires")
 function titleTurno(number, courtsQty){
   const actualCase = number % courtsQty
   switch (number%courtsQty) {
-      case actualCase: return `${number+1}° - `
+      case actualCase: return `${number === 0 ? courtsQty : number}° - `
   }
 }
 
@@ -451,17 +451,7 @@ const getAlertMessage = async () => {
   </template>
 
 <style scoped>
-.calendar-container {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-}
 
-@media (max-width: 768px) {
-    .calendar-container {
-        padding: 10px;
-    }
-}
 .custom-event {
     display: block; 
     width: 100%; /* Ensure full width */

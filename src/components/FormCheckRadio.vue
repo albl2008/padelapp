@@ -22,7 +22,8 @@ const props = defineProps({
   inputValue: {
     type: [String, Number, Boolean],
     required: true
-  }
+  },
+  required:Boolean
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -39,8 +40,9 @@ const inputType = computed(() => (props.type === 'radio' ? 'radio' : 'checkbox')
 
 <template>
   <label :class="type">
-    <input v-model="computedValue" :type="inputType" :name="name" :value="inputValue" />
+    <input v-model="computedValue" :type="inputType" :name="name" :value="inputValue" :required="required"/>
     <span class="check" />
     <span class="pl-2">{{ label }}</span>
+
   </label>
 </template>

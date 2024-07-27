@@ -13,12 +13,15 @@ import { onMounted, ref, computed, watch } from 'vue';
 import { useCourtsStore } from '@/stores/courts';
 import { useConfigStore } from '@/stores/config'
 
+
+
 import router from '../../router/index'
 import { getAllCourts, createAllCourts } from '@/api/courts'
 import { getAllConfig } from '@/api/config'
 
 
 const courtsStore = useCourtsStore();
+
 const configStore = useConfigStore();
 const existsConfig = ref(false);
 const config = ref([]);
@@ -48,6 +51,8 @@ const getConfig = async () => {
   config.value = configData.data.results[0]
   if (config.value) {
     existsConfig.value = true
+  } else {
+    courtsStore.setNotification({ message: 'Por favor, cree una configuración', type: 'warning' });
   }
 
 }
@@ -61,18 +66,21 @@ const getCourts = async () => {
 
 
 const checkCompleteCourts = (courts) => {
-  const totalCourts = config.value.courtsQuantity
-  const createdCourts = courts.length
-  debugger
-  if (totalCourts === createdCourts) {
-    
-    allCourtsCreated.value = true
-    
-  } else {
-    showMessage.value = true
-    allCourtsCreated.value = false
-    
+  if (config.value){
+    const totalCourts = config.value.courtsQuantity
+    const createdCourts = courts.length
+    debugger
+    if (totalCourts === createdCourts) {
+      
+      allCourtsCreated.value = true
+      
+    } else {
+      showMessage.value = true
+      allCourtsCreated.value = false
+      
+    }
   }
+  
 }
 
 
@@ -83,6 +91,8 @@ const createCourt = () => {
 };
 
 const notification = computed(() => courtsStore.notification);
+
+
 
 const cancelMessage = () => {
   showMessage.value = false

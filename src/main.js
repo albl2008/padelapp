@@ -7,6 +7,7 @@ import { useDarkModeStore } from '@/stores/darkMode.js';
 import { useCourtsStore } from '@/stores/courts';
 import { useConfigStore } from '@/stores/config';
 import { useAuthStore } from '@/stores/auth';
+import { useNotificationStore } from '@/stores/notifications';
 import { configDotenv } from "dotenv";
 import './css/main.css';
 import './api/interceptor'
@@ -49,6 +50,8 @@ if (authStore.isLoggedIn) {
   //router.push('/dashboard');
   // darkModeStore.isEnabled = true
   // darkModeStore.set()
+  const notificationsStore = useNotificationStore(pinia);
+  notificationsStore.getNotifications();
 } else {
   // The user is not authenticated, you can redirect or show a login form
   // For example, you might want to redirect to the login page

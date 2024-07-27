@@ -15,8 +15,8 @@ import { useAuthStore } from '@/stores/auth'
 import { getLastVisitedURL, setLastVisitedURL } from '@/api/interceptor'
 
 const form = reactive({
-  email: 'alvaroblanco10@gmail.com',
-  pass: 'locolope1',
+  email: '',
+  pass: '',
   remember: true
 })
 
@@ -47,6 +47,8 @@ const submit = async () => {
       email: form.email,
       password: form.pass
     });
+
+    debugger
 
     if (loginResponse === true) {
       debugger

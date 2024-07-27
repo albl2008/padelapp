@@ -3,7 +3,7 @@ import { mdiForwardburger, mdiBackburger, mdiMenu } from '@mdi/js'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import menuAside from '@/menuAside.js'
-import menuNavBar from '@/menuNavBar.js'
+import useMenuNavBar from '@/menuNavBar.js'
 import { useDarkModeStore } from '@/stores/darkMode.js'
 import BaseIcon from '@/components/BaseIcon.vue'
 import FormControl from '@/components/FormControl.vue'
@@ -15,11 +15,11 @@ import FooterBar from '@/components/FooterBar.vue'
 const layoutAsidePadding = 'xl:pl-60'
 
 const darkModeStore = useDarkModeStore()
-
 const router = useRouter()
-
 const isAsideMobileExpanded = ref(false)
 const isAsideLgActive = ref(false)
+
+const menuNavBar = useMenuNavBar() // Call the function to get the menuNavBar items
 
 router.beforeEach(() => {
   isAsideMobileExpanded.value = false
@@ -27,13 +27,12 @@ router.beforeEach(() => {
 })
 
 const menuClick = (item) => {
-  
   if (item.isToggleLightDark) {
     darkModeStore.set()
   }
 
   if (item.isLogout) {
-    //
+    // Handle logout
   }
 }
 </script>
@@ -62,9 +61,6 @@ const menuClick = (item) => {
         <NavBarItemPlain display="hidden lg:flex xl:hidden" @click.prevent="isAsideLgActive = true">
           <BaseIcon :path="mdiMenu" size="24" />
         </NavBarItemPlain>
-        <!-- <NavBarItemPlain use-margin>
-          <FormControl placeholder="Search (ctrl+k)" ctrl-k-focus transparent borderless />
-        </NavBarItemPlain> -->  
       </NavBar>
       <AsideMenu
         :is-aside-mobile-expanded="isAsideMobileExpanded"
@@ -76,9 +72,7 @@ const menuClick = (item) => {
       <slot />
       <FooterBar>
         Get more with
-        <a href="https://tailwind-vue.justboil.me/" target="_blank" class="text-blue-600"
-          >Premium version</a
-        >
+        <a href="https://tailwind-vue.justboil.me/" target="_blank" class="text-blue-600">Premium version</a>
       </FooterBar>
     </div>
   </div>

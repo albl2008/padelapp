@@ -11,7 +11,9 @@ export const useCourtsStore = defineStore({
     async fetchCourts() {
       try {
         const response = await getAllCourts();
+        
         this.setCourts(response.data.results);
+        return response.data.results
       } catch (error) {
         console.error('Error fetching courts:', error);
       }

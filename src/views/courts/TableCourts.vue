@@ -11,6 +11,7 @@ import UserAvatar from '@/components/UserAvatar.vue';
 import { deleteCourt, getAllCourts } from '@/api/courts';
 import DeleteConfirmation from '@/components/DeleteConfirmation.vue'
 import router from '@/router';
+import { getShiftsByCourt } from '@/api/shifts';
 
 const courtsStore = useCourtsStore();
 
@@ -30,6 +31,7 @@ const courtDeleted = ref(false);
 const courts = ref([]);
 const isDeleting = ref(false);
 const deletionError = ref(null);
+const confirmationMessage = ref('')
 
 const cancelDelete = () => {
     isModalDangerActive.value = false
@@ -117,9 +119,14 @@ const getCourts = async () => {
   courts.value = courtsData.data.results
 };
 
-const courtToDelete = (court) => {
+const courtToDelete = async (court) => {
   courtIdToDelete.value = court.id;
-  isModalDangerActive.value = true;
+  const shiftsByCourt = await getShiftsByCourt(court.id)
+  if (shiftsByCourt) {
+    isModalDangerActive.value = true;
+    confirmationMessage.value = 'Si elimina esta cancha se eliminaran los turnos asociados. ¿Deseas continuar?'
+  }
+ 
 };
 
 const courtToEdit = (court) => {
@@ -148,6 +155,7 @@ const checked = (isChecked, court) => {
       v-if="isModalDangerActive"
       v-model:isActive="isModalDangerActive"
       :itemIdToDelete="courtIdToDelete"
+      :confirmationMessage="confirmationMessage ? confirmationMessage : 'Seguro que quieres eliminar esta cancha?'"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
     />

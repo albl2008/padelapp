@@ -20,6 +20,8 @@ import { config } from '@fullcalendar/core/internal'
 import { useConfigStore } from '@/stores/config'
 import { getCourtById } from '@/api/courts'
 import PillTag from '@/components/PillTag.vue'
+import UpdateConfirmation from '@/components/UpdateConfirmation.vue'
+import CardBoxModal from '@/components/CardBoxModal.vue'
 
 
 
@@ -46,7 +48,7 @@ const form = reactive({
 const isEditMode = ref(false);
 
 const idShift = router.currentRoute.value.params.idShift;
-
+const isCancellingShift = ref(false);
 
 const submit = async () => {
   try {
@@ -130,6 +132,36 @@ const calculateTotal = (addons) => {
 
 }
 
+const cancel = () => {
+  isCancellingShift.value = true
+}
+
+const cancelModal = () => {
+  isCancellingShift.value = false
+}
+
+const cancelShift = async () => {
+
+  
+
+  try {
+    const body = {
+      status: {
+        id: 0,
+        sta: 'available'
+      },
+      addons: [],
+      client: null
+      
+    }
+    await updateShift(idShift, body);
+    shiftsStore.setNotification({ message: 'Turno cancelado correctamente', type: 'info' });
+    router.push('/dashboard')
+  } catch (error) {
+    console.error('Error canceling shift:', error);
+  }
+}
+
 
 // const formStatusWithHeader = ref(true)
 
@@ -158,6 +190,17 @@ const calculateTotal = (addons) => {
           small
         /> -->
       </SectionTitleLineWithButton>
+
+      <CardBoxModal v-model="isCancellingShift" title="Cancelar Turno">
+        <UpdateConfirmation
+            v-if="isCancellingShift"
+            v-model:isActive="isCancellingShift"
+            confirmation-message="Confirme la cancelacion del turno."
+            @confirm="cancelShift($event)"
+            @cancel="cancelModal"
+          />
+      </CardBoxModal>
+
       <CardBox is-form @submit.prevent="submit">
         <div class="w-full flex grid md:grid-cols-2 grid-cols-1 place-items-center">
           <div class="w-2/3">
@@ -198,9 +241,10 @@ const calculateTotal = (addons) => {
             <PillTag  type="success" :label="'$'+totalPriceAddons " />
           </div>
 
-        <div class="flex justify-end mt-4">
+        <div v-if="shiftStatus && shiftStatus.id === 1" class="flex justify-end mt-4">
           
-          <BaseButton v-if="shiftStatus && shiftStatus.id === 1" type="button" color="info" outline label="+Adicionales" @click="redirectToAddons" />
+          <BaseButton  type="button" color="info" outline label="+Adicionales" @click="redirectToAddons" />
+          
         </div>
         </div>
         <!-- <FormField label="Superficie">
@@ -215,10 +259,19 @@ const calculateTotal = (addons) => {
         </div>  
         <BaseDivider />
         <template #footer>
+          <div class="flex justify-between">
+          
+          <div>
           <BaseButtons>
-            <BaseButton type="submit" color="info" :label="isEditMode ? 'Reservar' : 'Crear'" />
+            <BaseButton type="submit" color="info" :label="isEditMode ? shiftStatus.id === 1 ? 'Actualizar' : 'Reservar' : 'Crear'" />
             <BaseButton color="info" outline label="Volver" @click="backToCalendar" />
           </BaseButtons>
+          </div>
+
+          <div>
+            <BaseButton v-if="shiftStatus && shiftStatus.id === 1" class="ml-2" type="button" color="danger" label="Cancelar" @click="cancel" />
+          </div>
+          </div>
         </template>
       </CardBox>
     </SectionMain>

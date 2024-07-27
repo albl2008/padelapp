@@ -12,6 +12,7 @@ export const useConfigStore = defineStore({
       try {
         const response = await getAllConfig();
         this.setConfig(response.data.results);
+        return response.data.results[0]
       } catch (error) {
         console.error('Error fetching config:', error);
       }

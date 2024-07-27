@@ -1,6 +1,7 @@
 <script setup>
 import AsideMenuLayer from '@/components/AsideMenuLayer.vue'
 import OverlayLayer from '@/components/OverlayLayer.vue'
+import { useMainStore } from '@/stores/main';
 
 defineProps({
   menu: {
@@ -14,11 +15,16 @@ defineProps({
 const emit = defineEmits(['menu-click', 'aside-lg-close-click'])
 
 const menuClick = (event, item) => {
+  resestAllNotifications()
   emit('menu-click', event, item)
 }
 
 const asideLgCloseClick = (event) => {
   emit('aside-lg-close-click', event)
+}
+
+const resestAllNotifications = () => {
+  useMainStore().resetAllNotifications()
 }
 </script>
 

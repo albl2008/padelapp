@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
+import { useCourtsStore } from './courts'
+import { useShiftsStore } from './shifts';
+import { useConfigStore } from './config';
+import { useAuthStore } from './auth';
+import { useAddonStore } from './addons';
+import { useClubStore } from './club';
+import { useNotificationStore } from './notifications';
 
 
 export const useMainStore = defineStore('main', () => {
@@ -17,8 +24,23 @@ export const useMainStore = defineStore('main', () => {
 
   const isFieldFocusRegistered = ref(false)
 
+  const courtsStore = useCourtsStore()
+
   const clients = ref([])
   const history = ref([])
+
+  function fetchNotifications() {
+    useNotificationStore().getNotifications()
+  }
+
+  function resetAllNotifications(){
+    useCourtsStore().resetNotification()
+    useShiftsStore().resetNotification()
+    useConfigStore().resetNotification()
+    useAuthStore().resetNotification()
+    useAddonStore().resetNotification()
+    useClubStore().resetNotification()
+  }
 
   function setUser(payload) {
     if (payload.name) {
@@ -72,6 +94,8 @@ export const useMainStore = defineStore('main', () => {
     history,
     setUser,
     fetchSampleClients,
-    fetchSampleHistory
+    fetchSampleHistory,
+    resetAllNotifications,
+    fetchNotifications
   }
 })

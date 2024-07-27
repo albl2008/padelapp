@@ -25,7 +25,8 @@ const props = defineProps({
     type: [Array, String, Number, Boolean],
     default: null
   },
-  error:Boolean
+  error:Boolean,
+  required:Boolean
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -50,6 +51,7 @@ const computedValue = computed({
       :label="value"
       :class="componentClass"
       class="mr-6 mb-3 last:mr-0"
+      :required="required"
     />
   </div>
 </template>

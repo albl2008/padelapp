@@ -42,6 +42,9 @@ import { getAllConfig } from '@/api/config'
 import { useConfigStore } from '@/stores/config'
 import 'vue3-carousel/dist/carousel.css'
 import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
+import { useClubStore } from '@/stores/club'
+import { getActiveClub } from '@/api/club'
+import { getFile } from '@/api/files'
 
 
 
@@ -49,7 +52,8 @@ const authStore = useAuthStore()
 const courtsStore = useCourtsStore()
 const shiftsStore = useShiftsStore()
 const configStore = useConfigStore()
-
+const clubStore = useClubStore()
+const clubActive = ref(null)
 const thisWeek = ref(0)
 const thisWeekBooked = ref(0)
 const today = ref(0)
@@ -63,6 +67,7 @@ const todayShifts = ref([])
 const courts = ref([]);
 const config = ref(null)
 const router = useRouter()
+const urlLogo = ref(null)
 const chartData = ref(null)
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 
@@ -71,6 +76,12 @@ const isLoggedIn = computed(() => authStore.isLoggedIn);
 onMounted( async() => {
   getPercents()
   getConfig()
+  clubActive.value = await getActiveClub()
+  
+  if (clubActive.value.data.logo){
+        urlLogo.value = await getFile(clubActive.value.data.logo)
+  }
+
 })
 
 const getConfig = async() => {
@@ -145,21 +156,40 @@ const handleClick = (shiftId) => {
 
 
 
+
+
 </script>
 
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" title="Overview" main>
-        <BaseButton
-          :icon="mdiCalendar"
-          label="Calendario"
-          color="contrast"
-          rounded-full
-          small
-          to="/calendar"
-        />
-      </SectionTitleLineWithButton>
+      <div v-if="clubActive" class="flex items-center justify-between">
+        <div v-if="urlLogo" class="w-1/6 mb-6"> 
+          <img
+          :src="urlLogo"
+          class="rounded-full h-12 w-12 max-w-12 bg-gray-100 dark:bg-slate-800"
+          />
+        </div>
+        <div class="w-5/6">
+          <SectionTitleLineWithButton :title="clubActive.data.name" main>
+          
+            <BaseButton
+              :icon="mdiCalendar"
+              label="Calendario"
+              color="contrast"
+              rounded-full
+              small
+              to="/calendar"
+            />
+           
+          </SectionTitleLineWithButton>
+
+        </div>
+
+        
+      
+      </div>
+      
 
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
         <CardBoxWidget
@@ -199,6 +229,9 @@ const handleClick = (shiftId) => {
           suffix="%"
           label="Performance"
         /> -->
+      </div>
+      <div v-if="config && todayShifts && todayShifts.length > 0">
+        <BannerCourtsInUse class="mt-6 mb-6"  :shifts="todayShifts"/>
       </div>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -270,9 +303,7 @@ const handleClick = (shiftId) => {
     </div>
 </div>
       
-  <div v-if="config && todayShifts && todayShifts.length > 0">
-    <BannerCourtsInUse class="mt-6 mb-6"  :shifts="todayShifts"/>
-  </div>
+ 
      
 
 

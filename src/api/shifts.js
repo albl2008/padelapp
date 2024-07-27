@@ -14,3 +14,4 @@ export const getShiftsNextDays = (body) => axios.post(`${SHIFTS_URL}/get/next-da
 export const updateShift = (shiftId, shiftData) => axios.patch(`${SHIFTS_URL}/${shiftId}`, shiftData);
 export const bookShift = (shiftId, shiftData) => axios.patch(`${SHIFTS_URL}/booking/${shiftId}`, shiftData);
 export const deleteShift = (shiftId) => axios.delete(`${SHIFTS_URL}/${shiftId}`);
+export const getShiftsByCourt = (courtId) => axios.get(`${SHIFTS_URL}/court/${courtId}`);

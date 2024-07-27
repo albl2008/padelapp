@@ -11,16 +11,22 @@ import FormFilePicker from '@/components/FormFilePicker.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseButtons from '@/components/BaseButtons.vue'
 import UserCard from '@/components/UserCard.vue'
+import ClubCard from '@/components/ClubCard.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import Maps from '@/components/maps/Maps.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notifications'
 import { updateUser, getUser } from '@/api/user'
 import NotificationBar from '@/components/NotificationBar.vue'
 import { useClubStore } from '@/stores/club'
 import { getAllClubs } from '@/api/club'
 
 const mainStore = useMainStore()
+
+const reloadProfile = ref(false)
+
+const notificationsStore = useNotificationStore()
 
 const authStore = useAuthStore()
 
@@ -63,6 +69,8 @@ const submitProfile = async () => {
     await updateUser(userId, updateBody)
     authStore.setActiveClub(getClubId(profileForm.activeClub))
     authStore.setNotification({ message: 'Actualizado exitosamente', type: 'success' });
+    reloadProfile.value = true
+    mainStore.fetchNotifications()
   }
 
 
@@ -107,7 +115,7 @@ const submitPass = () => {
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton :icon="mdiAccount" title="Profile" main>
+      <SectionTitleLineWithButton :icon="mdiAccount" title="Perfil" main>
         <BaseButton
           href="https://github.com/justboil/admin-one-vue-tailwind"
           target="_blank"
@@ -122,7 +130,7 @@ const submitPass = () => {
         <b>{{ notification.message }}</b>
         </NotificationBar>
 
-      <UserCard class="mb-6" />
+      <ClubCard :reload="reloadProfile" class="mb-6" />
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CardBox is-form @submit.prevent="submitProfile">

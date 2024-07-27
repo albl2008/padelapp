@@ -107,8 +107,9 @@ const clubToEdit = (club) => {
 
 onMounted(async () => {
   await clubsStore.fetchClubs();
-  const active = authStore.activeClub
-  debugger
+  await clubsStore.getActiveClub();
+  
+  
 });
 
 
@@ -155,7 +156,7 @@ onMounted(async () => {
         {{ club.phone }}
       </td>
       <td data-label="Active">
-        {{ authStore.activeClub === club.id ? 'Activo' : 'Inactivo' }}
+        {{ authStore.activeClub === club.id ? 'Si' : 'No' }}
       </td>
       <td data-label="Courts">
         {{ club.courtsQuantity }}

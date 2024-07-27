@@ -172,11 +172,11 @@ watch(updateId, () => {
           <div class="w-2/3">
 
         <FormField label="Descripción">
-          <FormControl v-model="form.description"  type="text"/>
+          <FormControl v-model="form.description" required  type="text"/>
         </FormField>
         
         <FormField label="Precio">
-          <FormControl v-model="form.price"  type="number"/>
+          <FormControl v-model="form.price" required  type="number"/>
         </FormField>
 
         

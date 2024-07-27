@@ -54,7 +54,7 @@ const schema = joi.object({
 
 
 const validateField = (field) => {
-  debugger
+  
   const { error } = schema.validate({ [field]: form[field] }, { abortEarly: false })
   return error ? error.details.some(detail => detail.context.key === field) : false
 }
@@ -62,7 +62,7 @@ const validateField = (field) => {
 const isEditMode = ref(false);
 
 const submit = async () => {
-  debugger
+  
   const { error } = schema.validate(form, { abortEarly: false })
   if (error) {
     console.log(error)
@@ -215,6 +215,7 @@ watch(form, (newForm) => {
               v-model="form.name" 
               :error="touchedFields.name && validateField('name')" 
               @blur="touchedFields.name = true" 
+              required
             />
           </FormField>
           <FormField label="Numero">
@@ -224,6 +225,7 @@ watch(form, (newForm) => {
               :error="touchedFields.number && validateField('number')"
               :disabled="true"
               @blur="touchedFields.number = true" 
+              required
             />
           </FormField>
 
@@ -238,6 +240,7 @@ watch(form, (newForm) => {
     :class="{ 'border-red-500': touchedFields.surface && validateField('surface') }"
     :error="touchedFields.surface && validateField('surface')" 
     @change="touchedFields.surface = true"
+    required       
   />
 </FormField>
 
@@ -251,6 +254,8 @@ watch(form, (newForm) => {
     :class="{ 'border-red-500': touchedFields.walls && validateField('walls') }"
     :error="touchedFields.surface && validateField('surface')" 
     @change="touchedFields.walls = true"
+    required
+    
   />
 </FormField>
         </div>
