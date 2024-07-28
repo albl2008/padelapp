@@ -25,10 +25,23 @@ export const useNotificationStore = defineStore({
 
     async getNotifications() {
         try {
-           debugger
+            
             const configStore = useConfigStore();
             const courtStore = useCourtsStore();
             const clubStore = useClubStore();
+
+            const clubs = await clubStore.fetchClubs();
+            
+            if (!clubs || clubs.length === 0) {
+                if (!this.notifications.some(notification => notification.type.id === 'club' && notification.type.name === 'not_found'))  {
+                    this.notifications.push({ message: 'Club no encontrado. Cargue su club.', type: { id: 'club', name: 'not_found' } });
+                    return
+                }
+            } else {
+              if (this.notifications.some(notification => notification.type.id === 'club' && notification.type.name === 'not_found')) {
+                this.notifications = this.notifications.filter(notification => notification.type.id === 'club' && notification.type.name !== 'not_found');
+              }
+          }
     
             const config = await configStore.fetchConfig();
             if (!config || config.length === 0) {
@@ -62,17 +75,7 @@ export const useNotificationStore = defineStore({
             }
             
     
-            const clubs = await clubStore.fetchClubs();
-            debugger
-            if (!clubs || clubs.length === 0) {
-                if (!this.notifications.some(notification => notification.type.id === 'club' && notification.type.name === 'not_found'))  {
-                    this.notifications.push({ message: 'Club no encontrado. Cargue su club.', type: { id: 'club', name: 'not_found' } });
-                }
-            } else {
-              if (this.notifications.some(notification => notification.type.id === 'club' && notification.type.name === 'not_found')) {
-                this.notifications = this.notifications.filter(notification => notification.type.id === 'club' && notification.type.name !== 'not_found');
-              }
-          }
+            
         } catch (error) {
           console.error('Error fetching notifications:', error);
         }

@@ -59,7 +59,7 @@
         <template #footer>
           <BaseButtons class="flex" >
             <div class="" v-for="item in events">
-              <BaseButton :label="'Cancha: ' + item.court.number + ''" :color="item.status.id === 0 ? 'success' : confirmColor" @click="confirm(item.id)" />
+              <BaseButton outline :label="'Cancha: ' + item.court.number + ''" :color="item.status.id === 0 ? 'success' : confirmColor" @click="confirm(item.id)" />
             </div>
             
             

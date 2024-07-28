@@ -25,7 +25,7 @@ import esLocale from '@fullcalendar/core/locales/es'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
-dayjs.tz.setDefault("America/Argentina/Buenos_Aires")
+dayjs.tz.setDefault('UTC')
   const configStore = useConfigStore()
   const shiftsStore = useShiftsStore()
 
@@ -64,10 +64,10 @@ dayjs.tz.setDefault("America/Argentina/Buenos_Aires")
   console.log('First day of the month:', secondDayOfMonth.format('MM-DD-YYYY'));
 };
 
-function titleTurno(number, courtsQty){
-  const actualCase = number % courtsQty
-  switch (number%courtsQty) {
-      case actualCase: return `${number === 0 ? courtsQty : number}° - `
+function titleTurno(number, dailyShifts){
+  const actualCase = number
+  switch (number) {
+      case actualCase: return `${number === 0 ? dailyShifts : number}° - `
   }
 }
 
@@ -81,7 +81,6 @@ function titleTurno(number, courtsQty){
     locale: esLocale,
     datesSet: handleDatesSet,
     eventClick: handleEventClick,
-    
     dayMaxEventRows: 4,
     moreLinkClick: 'popover',
     moreLinkClick: handleMoreLinkClick,
@@ -96,7 +95,7 @@ function titleTurno(number, courtsQty){
               '; color: ' +
               eventTextColor +
               '; padding: 5px; border-radius: 5px; font-weight: bold;">' + info.event.title +
-              dayjs(info.event.start).format('HH:mm') +
+              dayjs(info.event.start).tz('UTC').format('HH:mm') +
               '</div>';
           
             return { html: html };
@@ -126,24 +125,29 @@ function titleTurno(number, courtsQty){
   });
 
   let shiftNumber = 0
-  const courtsQty = config.courtsQuantity
   
-  debugger
+  
+  
   // Map the filtered shifts to events
   const events = filteredShifts.map((shift, index) => {
     const shiftsByDay = getShiftsByDateAndHour(shift.date, new Date(shift.start).getHours());
     const lengthByDay = shiftsByDay.length
+    const dailyShifts = config.shiftsPerDay
     let color = '#FFFFFF';
     let cont = 0
     shiftNumber = shiftNumber + 1
+    
     for (const shift of shiftsByDay) {
       
       if (shift.status.id === 0){
         cont ++
       }
       
-      shiftNumber = shiftNumber % courtsQty
+      
+     
     }
+    shiftNumber = shiftNumber % dailyShifts
+    
 
     if (cont === lengthByDay){
       color = '#51976B'
@@ -153,7 +157,7 @@ function titleTurno(number, courtsQty){
       color = '#FF0000'
     }
     return {
-      title: `${titleTurno(shiftNumber,courtsQty)}`,
+      title: `${titleTurno(shiftNumber,dailyShifts)}`,
       color: color,
       start: shift.start,
       end: shift.end,
@@ -405,7 +409,7 @@ const getAlertMessage = async () => {
           <div v-if="alertMessage" class="flex justify-center items-center">
           <p class = "mr-4">{{ alertMessage }}</p>
           <BaseButtons>
-            <BaseButton color="info" label="Generar" @click="getShifts" />
+            <BaseButton color="info" outline label="Generar" @click="getShifts" />
         </BaseButtons>
 
 

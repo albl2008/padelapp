@@ -11,15 +11,26 @@ import CardBoxComponentEmpty from '@/components/CardBoxComponentEmpty.vue'
 import { onMounted, ref, computed, watch } from 'vue';
 import { useConfigStore } from '@/stores/config';
 
+import { useClubStore } from '@/stores/club';
+
 import router from '../../router/index'
 
 
 const configStore = useConfigStore();
+const clubStore = useClubStore();
+const clubActive = ref(false);
 
 const config = ref([]);
 
 onMounted(async () => {
   console.log('Component mounted!');
+  const activeClub = await clubStore.getActiveClub();
+  if (activeClub) {
+    clubActive.value = true;
+  } else {
+    clubActive.value = false;
+    configStore.setNotification({ message: 'No hay club activo. Cargue un su club', type: 'warning' });
+  }
   await fetchConfig();
 }); 
 
@@ -67,7 +78,10 @@ watch(notification, (newNotification) => {
           rounded-full
           small
         /> -->
-        <BaseButton v-if="!configStore.config.length > 0" :icon="mdiPlus" label="Configuracion" color="primary" @click="createConfig" />
+        <div v-if="clubActive && config.length > 0">
+          <BaseButton :icon="mdiPlus" label="Configuracion" color="primary" @click="createConfig" />
+        </div>
+        
 
       </SectionTitleLineWithButton>
       <NotificationBar v-if="notification" :color="notification.type" @close="configStore.resetNotification()" :dismissCallback="dismissNotifications">

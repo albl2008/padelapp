@@ -267,7 +267,7 @@ watch(form, (newForm) => {
         <template #footer>
           <div class="flex justify-end">
             <BaseButtons>
-            <BaseButton type="submit" color="info" :label="isEditMode ? 'Editar' : 'Crear'" />
+            <BaseButton type="submit" color="info" outline :label="isEditMode ? 'Editar' : 'Crear'" />
             <BaseButton color="info" outline label="Volver" @click="backToCurts" />
           </BaseButtons>
           </div>

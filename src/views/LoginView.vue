@@ -13,6 +13,7 @@ import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutGuest from '@/layouts/LayoutGuest.vue'
 import { useAuthStore } from '@/stores/auth'
 import { getLastVisitedURL, setLastVisitedURL } from '@/api/interceptor'
+import { useNotificationStore } from '@/stores/notifications'
 
 const form = reactive({
   email: '',
@@ -23,6 +24,7 @@ const form = reactive({
 const router = useRouter()
 
 const authStore = useAuthStore()
+const notificationsStore = useNotificationStore()
 
 const notification = computed(() => authStore.notification);
 const isLoggedIn = computed(() => authStore.isLoggedIn);
@@ -53,6 +55,7 @@ const submit = async () => {
     if (loginResponse === true) {
       debugger
       console.log('Login correcto')
+      notificationsStore.getNotifications()
       isLoggedIn.value = true
       const lastVisitedURL = getLastVisitedURL()
           if (lastVisitedURL) {
@@ -64,6 +67,7 @@ const submit = async () => {
               router.push('/dashboard');
           }
       authStore.resetNotification();
+      
     } else {
       debugger
       setLastVisitedURL(null);

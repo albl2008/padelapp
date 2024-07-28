@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, computed } from 'vue'
+import { reactive, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { mdiAccount, mdiAsterisk } from '@mdi/js'
 import SectionFullScreen from '@/components/SectionFullScreen.vue'
@@ -24,10 +24,13 @@ const form = reactive({
   remember: true
 })
 
+const isLoading = ref(false)
+
 const router = useRouter()
 
 const submit = async() => {
     try {
+          isLoading.value = true
           const body = {
             name: form.name,
             email: form.email,
@@ -37,7 +40,7 @@ const submit = async() => {
           const response = await register(body);
           debugger
           if (response.status === 201) {
-           
+            isLoading.value = false
             authStore.setNotification({ message: 'Registro exitoso. Se envio un email para confirmar la cuenta.', type: 'info' });
             router.push('/login')
             
@@ -45,6 +48,7 @@ const submit = async() => {
           // Handle the response as needed
           
         } catch (error) {
+          isLoading.value = false
           debugger
           // Handle errors
           console.error('Registration failed:', error.response);
@@ -56,7 +60,7 @@ const submit = async() => {
             authStore.setNotification({ message: 'Error al registrar. Por favor, intenta de nuevo.', type: 'danger' });
           }
           
-        }
+        } 
  
 }
 
@@ -74,7 +78,13 @@ const dismissNotifications = () => {
       <CardBox :class="cardClass" is-form @submit.prevent="submit">
         <NotificationBar v-if="notification" :color="notification.type" @close="courtsStore.resetNotification()" :dismissCallback="dismissNotifications">
           <b>{{ notification.message }}</b>
-        </NotificationBar> <FormField label="Nombre" help="Ingrese su nombre">
+        </NotificationBar> 
+
+        <div v-if="isLoading" class="flex justify-center w-full">
+          <img src="https://cdn.dribbble.com/users/3337757/screenshots/6825268/076_-loading_animated_dribbble_copy.gif" class="w-48" alt="Loading..." />
+        </div>
+        
+        <FormField label="Nombre" help="Ingrese su nombre">
           <FormControl
             v-model="form.name"
             :icon="mdiAccount"

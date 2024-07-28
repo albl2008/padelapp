@@ -53,7 +53,7 @@ const submit = async () => {
         
         <template #footer>
           <BaseButtons>
-            <BaseButton type="submit" color="info" label="Send Reset" />
+            <BaseButton type="submit" outline color="info" label="Send Reset" />
           </BaseButtons>
         </template>
       </CardBox>

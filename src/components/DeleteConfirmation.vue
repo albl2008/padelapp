@@ -5,7 +5,7 @@
         <p>{{ confirmationMessage }}</p>
         <template #footer>
           <BaseButtons>
-            <BaseButton :label="confirmLabel" :color="confirmColor" @click="confirm" />
+            <BaseButton outline :label="confirmLabel" :color="confirmColor" @click="confirm" />
             <BaseButton v-if="hasCancel" label="Cancelar" :color="cancelColor" outline @click="cancel" />
           </BaseButtons>
         </template>

@@ -13,6 +13,7 @@ import DeleteConfirmation from '@/components/DeleteConfirmation.vue'
 import router from '@/router';
  import NotificationBar from '@/components/NotificationBar.vue'
 import { getAllShifts } from '@/api/shifts';
+import EditConfirmation from '@/components/EditConfirmation.vue';
 
 const configsStore = useConfigStore();
 
@@ -21,6 +22,7 @@ const items = computed(() => configsStore.config);
 const emit = defineEmits();
 
 const configIdToDelete = ref(null);
+const configIdToEdit = ref(null);
 const configDeleted = ref(false);
 const config = ref(null);
 const isDeleting = ref(false);
@@ -58,6 +60,7 @@ const confirmDelete = async () => {
 const isModalActive = ref(false);
 
 const isModalDangerActive = ref(false);
+const isModalEdit = ref(false);
 
 const perPage = ref(5);
 
@@ -105,10 +108,24 @@ const configToDelete = async (config) => {
   
 };
 
-const configToEdit = (config) => {
-  config.value = config;
-  router.push(`/edit-config/${config.id}`)
+const configToEdit = async (config) => {
+  configIdToEdit.value = config.id;
+  const shifts = await getAllShifts();
+  if (shifts.data.results.length > 0) {
+    confirmationMessage.value = 'Se eliminaran los turnos si los hay. ¿Deseas continuar?'
+  }
+  isModalEdit.value = true;
+  
 };
+
+const confirmEdit = () => {
+  isModalEdit.value = false
+  router.push(`/edit-config/${configIdToEdit.value}`)
+}
+
+const cancelEdit = () => {
+  isModalEdit.value = false
+}
 
 const convertDays = (days) => {
   const daysOfWeek = ['D','L', 'M', 'M', 'J', 'V', 'S'];
@@ -132,6 +149,7 @@ const checked = (isChecked, config) => {
   </CardBoxModal>
 
   <CardBoxModal v-model="isModalDangerActive" title="Eliminar Configuracion">
+
     <DeleteConfirmation
       v-if="isModalDangerActive"
       v-model:isActive="isModalDangerActive"
@@ -139,6 +157,18 @@ const checked = (isChecked, config) => {
       :confirmationMessage="confirmationMessage ? confirmationMessage : 'Seguro que quieres eliminar esta configuración?'"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
+    />
+  </CardBoxModal>
+
+  <CardBoxModal v-model="isModalEdit" title="Editar Configuracion">
+    <DeleteConfirmation 
+      v-if="isModalEdit"
+      v-model:isActive="isModalEdit"
+      :itemIdToDelete="configIdToEdit"
+      confirmColor="warning"
+      :confirmationMessage="confirmationMessage ? confirmationMessage : 'Seguro que quieres editar esta configuración?'"
+      @confirm="confirmEdit"
+      @cancel="cancelEdit"  
     />
   </CardBoxModal>
 

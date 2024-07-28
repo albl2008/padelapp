@@ -19,15 +19,18 @@ import { useCourtsStore } from '@/stores/courts'
 import { config } from '@fullcalendar/core/internal'
 import { useConfigStore } from '@/stores/config'
 import { getCourtById } from '@/api/courts'
-
+import UpdateConfirmation from '@/components/UpdateConfirmation.vue'
+import CardBoxModal from '@/components/CardBoxModal.vue'
 
 
 const shiftsStore = useShiftsStore();
 const configStore = useConfigStore();
 const courtsStore = useCourtsStore();
+const shiftStatus = ref(null);
 
 const courtId = ref(null);
 const start = ref(null);
+const isCancellingShift = ref(false);
 
 
 const form = reactive({
@@ -86,6 +89,37 @@ function courtsOptions(){
   return courtsNumbers
 }
 
+const cancel = () => {
+  isCancellingShift.value = true
+}
+
+
+const cancelShift = async () => {
+
+  
+
+try {
+  const body = {
+    status: {
+      id: 0,
+      sta: 'available'
+    },
+    addons: [],
+    client: null
+    
+  }
+  await updateShift(idShift, body);
+  shiftsStore.setNotification({ message: 'Turno cancelado correctamente', type: 'info' });
+  router.push('/dashboard')
+} catch (error) {
+  console.error('Error canceling shift:', error);
+}
+}
+
+const closeModal = () => {
+  isCancellingShift.value = false
+}
+
 
 onMounted(async () => {
   // Check if an id parameter is present in the URL
@@ -99,6 +133,7 @@ onMounted(async () => {
     try {
       const shift = await getShiftById(shiftId);
       courtId.value = shift.data.court.id
+      shiftStatus.value = shift.data.status
       start.value = shift.data.start
       form.date = new Date(shift.data.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'UTC' });
       form.start = new Date(shift.data.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'}) 
@@ -145,17 +180,27 @@ onMounted(async () => {
           small
         /> -->
       </SectionTitleLineWithButton>
+      <CardBoxModal v-model="isCancellingShift" title="Cancelar Turno">
+        <UpdateConfirmation
+            v-if="isCancellingShift"
+            v-model:isActive="isCancellingShift"
+            confirmation-message="Confirme la cancelacion del turno."
+            @confirm="cancelShift($event)"
+            @cancel="closeModal"
+          />
+      </CardBoxModal>
+
       <CardBox is-form @submit.prevent="submit">
         <div class="w-full flex grid md:grid-cols-2 grid-cols-1 place-items-center">
           <div class="w-2/3">
         <FormField label="Fecha">
-          <FormControl v-model="form.date" :disabled="true" />
+          <FormControl v-model="form.date" disabled />
         </FormField>
         <FormField label="Inicio">
-          <FormControl v-model="form.start"  :disabled="true" />
+          <FormControl v-model="form.start"  disabled />
         </FormField>
         <FormField label="Fin">
-          <FormControl v-model="form.end" :disabled="true" />
+          <FormControl v-model="form.end" disabled />
         </FormField>
 
         <FormField label="Tolerancia">
@@ -181,7 +226,7 @@ onMounted(async () => {
         </FormField>
 
         <FormField label="Cancha">
-          <FormControl v-model="form.court" disabled="true" />
+          <FormControl v-model="form.court" disabled />
         </FormField>
         </div>
         <!-- <FormField label="Superficie">
@@ -196,10 +241,21 @@ onMounted(async () => {
         </div>  
         <BaseDivider />
         <template #footer>
-          <BaseButtons>
-            <BaseButton type="submit" color="info" :label="isEditMode ? 'Editar' : 'Crear'" />
-            <BaseButton color="info" outline label="Volver" @click="backToCalendar" />
-          </BaseButtons>
+          <div class="flex justify-between">
+
+            <div>
+              <BaseButtons>
+                <BaseButton type="submit" color="info" outline :label="isEditMode ? 'Editar' : 'Crear'" />
+                <BaseButton color="info" outline label="Volver" @click="backToCalendar" />
+              </BaseButtons>
+            </div>
+
+            <div>
+              <BaseButton v-if="shiftStatus && shiftStatus.id === 1" class="ml-2" type="button" color="danger" label="Cancelar" @click="cancel" />
+            </div>
+
+          </div>
+          
         </template>
       </CardBox>
     </SectionMain>

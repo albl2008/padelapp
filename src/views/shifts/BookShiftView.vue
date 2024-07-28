@@ -156,7 +156,7 @@ const cancelShift = async () => {
     }
     await updateShift(idShift, body);
     shiftsStore.setNotification({ message: 'Turno cancelado correctamente', type: 'info' });
-    router.push('/dashboard')
+    router.push('/calendar')
   } catch (error) {
     console.error('Error canceling shift:', error);
   }
@@ -205,13 +205,13 @@ const cancelShift = async () => {
         <div class="w-full flex grid md:grid-cols-2 grid-cols-1 place-items-center">
           <div class="w-2/3">
         <FormField label="Fecha">
-          <FormControl v-model="form.date" :disabled="true" />
+          <FormControl v-model="form.date" disabled />
         </FormField>
         <FormField label="Inicio">
-          <FormControl v-model="form.start"  :disabled="true" />
+          <FormControl v-model="form.start"  disabled />
         </FormField>
         <FormField label="Fin">
-          <FormControl v-model="form.end" :disabled="true" />
+          <FormControl v-model="form.end" disabled />
         </FormField>
 
         <FormField label="Tolerancia">
@@ -228,7 +228,7 @@ const cancelShift = async () => {
         </FormField>
 
         <FormField label="Cancha">
-          <FormControl v-model="form.court" disabled="true" />
+          <FormControl v-model="form.court" disabled/>
         </FormField>
 
         <div v-if="completeShift && completeShift.addons.length > 0" class="flex">
@@ -263,7 +263,7 @@ const cancelShift = async () => {
           
           <div>
           <BaseButtons>
-            <BaseButton type="submit" color="info" :label="isEditMode ? shiftStatus.id === 1 ? 'Actualizar' : 'Reservar' : 'Crear'" />
+            <BaseButton type="submit" color="info" outline :label="isEditMode ? shiftStatus.id === 1 ? 'Actualizar' : 'Reservar' : 'Crear'" />
             <BaseButton color="info" outline label="Volver" @click="backToCalendar" />
           </BaseButtons>
           </div>

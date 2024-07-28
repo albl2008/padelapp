@@ -1,7 +1,7 @@
 <script setup>
 
 import { reactive, ref, onMounted, computed } from 'vue'
-import { mdiBallotOutline } from '@mdi/js'
+import { mdiBallotOutline, mdiTools } from '@mdi/js'
 import SectionMain from '@/components/SectionMain.vue'
 import CardBox from '@/components/CardBox.vue'
 import FormCheckRadioGroup from '@/components/FormCheckRadioGroup.vue'
@@ -24,12 +24,14 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import { valid } from 'joi'
 import { useClubStore } from '@/stores/club'
 import { useNotificationStore } from '@/stores/notifications'
+import { getAllShifts } from '@/api/shifts'
 
 
 
 const configStore = useConfigStore();
 const clubStore = useClubStore();
 const notificationStore = useNotificationStore();
+const colorEdit = ref('info')
 
 const notification = computed(() => configStore.notification);
 
@@ -134,6 +136,11 @@ onMounted(async () => {
   debugger
   if (configId) {
     isEditMode.value = true;
+    const shifts = await getAllShifts();
+    if (shifts.data.results.length > 0) {
+      configStore.setNotification({ message: 'Se eliminaran los turnos cuando edite la configuracion', type: 'warning' });
+      colorEdit.value = 'warning';
+    }
 
     // Fetch config details based on the id and populate the form
     try {
@@ -229,7 +236,7 @@ const validateForm = (form) => {
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton :icon="mdiBallotOutline" :title="isEditMode ? 'Editar Configuracion' : 'Crear Configuracion'" main>
+      <SectionTitleLineWithButton :icon="mdiTools" :title="isEditMode ? 'Editar Configuracion' : 'Crear Configuracion'" main>
         <!-- <BaseButton
           href="https://github.com/justboil/admin-one-vue-tailwind"
           target="_blank"
@@ -314,7 +321,7 @@ const validateForm = (form) => {
         <template #footer >
           <div class="flex justify-end">
             <BaseButtons>
-            <BaseButton type="submit" color="info" :label="isEditMode ? 'Editar' : 'Crear'" />
+            <BaseButton type="submit" :color="colorEdit" outline :label="isEditMode ? 'Editar' : 'Crear'" />
             <BaseButton color="info" outline label="Volver" @click="backToConfig" />
           </BaseButtons>
           </div>
@@ -398,9 +405,9 @@ const validateForm = (form) => {
   --dp-hover-icon-color: #a0aec0;
   --dp-primary-color: #005cb2;
   --dp-primary-disabled-color: #61a8ea;
-  --dp-primary-text-color: #ffffff;
+  --dp-primary-text-color: #a9a9a9;
   --dp-secondary-color: #a9a9a9;
-  --dp-border-color: #2d2d2d;
+  --dp-border-color: #334155;
   --dp-menu-border-color: #2d2d2d;
   --dp-border-color-hover: #aaaeb7;
   --dp-disabled-color: #737373;
@@ -433,6 +440,17 @@ const validateForm = (form) => {
   background-color: var(--dp-background-color) !important;
   color: var(--dp-text-color) !important;
   border-color: var(--dp-border-color) !important;
+}
+
+:deep(.dp__theme_dark .dp__input) {
+  padding-left: 50px;
+  height: 45px !important;
+}
+
+:deep(.dp__theme_dark .dp__icon) {
+  color: var(--dp-icon-color) !important;
+  border-left : 1px solid var(--dp-border-color) !important;
+  border-right: 1px solid var(--dp-border-color) !important;
 }
 
 :deep(.dp__theme_dark .dp__button:hover) {

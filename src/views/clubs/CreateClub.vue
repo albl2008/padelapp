@@ -149,7 +149,7 @@ const submitPass = () => {
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton  title="Club" main>
+      <SectionTitleLineWithButton  :title="isEditMode ? clubForm.name : 'Crear club'" main>
         <BaseButton
           target="_blank"
           :icon="isEditMode && authStore.activeClub === router.currentRoute.value.params.idClub ? mdiCheck : mdiEye"
@@ -162,12 +162,14 @@ const submitPass = () => {
       <NotificationBar v-if="notification" :color="notification.type" @close="clubStore.resetNotification"  :dismissCallback="dismissNotifications">
         <b>{{ notification.message }}</b>
         </NotificationBar>
-      <div class="gap-6">
+      
+      <div class="gap-6 ">
+        
         <CardBox is-form @submit.prevent="submit" class="">
           <div v-if="clubForm.logo" class="flex justify-center mb-6"> 
             <img
             :src="urlLogo"
-            class="rounded-full h-48 w-48 max-w-48 bg-gray-100 dark:bg-slate-800"
+            class="rounded-full h-24 w-24 max-w-24 bg-gray-100 dark:bg-slate-800"
             />
           </div>
           
@@ -222,7 +224,7 @@ const submitPass = () => {
             </FormField>
 
             <FormField label="Logo" help="Logo de tu club">
-              <FormFilePicker label="Upload" v-model="clubForm.logo" @url="setLogoUrl($event)" accept="image/*"/>
+              <FormFilePicker :label="isEditMode && clubForm.logo ? 'Cambiar' : 'Subir'" v-model="clubForm.logo" @url="setLogoUrl($event)" :color="isEditMode && clubForm.logo ? 'success' : 'info'" accept="image/*"/>
             </FormField>
   
             
@@ -241,11 +243,11 @@ const submitPass = () => {
 
           <Maps @location-selected="setLocation($event)" :locationSaved="getLocation()" :addressSaved="getAddress()" @address-selected="setAddress($event)"/>
 
-          
+      
 
           <template #footer>
             <BaseButtons>
-              <BaseButton color="info" type="submit" label="Submit" />
+              <BaseButton color="info" outline type="submit" :label="isEditMode ? 'Actualizar' : 'Crear'" />
               <BaseButton color="info" label="Volver"  @click="router.go(-1)" outline />
             </BaseButtons>
           </template>

@@ -75,7 +75,7 @@ onMounted(() => {
         </FormField>
 
           <BaseButtons>
-            <BaseButton type="submit" color="info" label="Reset" />
+            <BaseButton type="submit" outline color="info" label="Reset" />
           </BaseButtons>
         </CardBox>
     </SectionFullScreen>
