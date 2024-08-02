@@ -42,7 +42,7 @@ watch(props, () => {
 });
 
 const setMarker = (location) => {
-  
+  debugger
   if (marker) {
     marker.setPosition(location);
   } else {
@@ -51,6 +51,11 @@ const setMarker = (location) => {
       map: mapInstance
     });
   }
+  const lat = marker.position.lat();
+  const lng = marker.position.lng();
+      
+  emit('location-selected', { lat, lng });
+  emit('address-selected', address.value);
 
   
 }
@@ -213,8 +218,8 @@ const initMap = () => {
 
     } else {
 
-      marker.position = place.geometry.location;
-      marker.title = place.name;
+      setMarker(place.geometry.location)
+      
       
     }
 
