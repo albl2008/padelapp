@@ -124,7 +124,7 @@ const createCourtsAuto = async() => {
           rounded-full
           small
         /> -->
-        <div v-if="existsConfig && allCourtsCreated">
+        <div v-if="existsConfig && !allCourtsCreated">
           <BaseButton class="mr-4" v-if="!allCourtsCreated"  :icon="mdiPlus" label="Cancha" color="primary" @click="createCourt" />
           <BaseButton v-if="courts.length === 0"  :icon="mdiPlus" label="Crear automaticamente" color="primary" @click="createCourtsAuto()" />
         </div>

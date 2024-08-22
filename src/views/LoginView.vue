@@ -52,17 +52,18 @@ const submit = async () => {
 
     debugger
 
-    if (loginResponse === true) {
+    if (loginResponse) {
       debugger
       console.log('Login correcto')
       notificationsStore.getNotifications()
       isLoggedIn.value = true
       const lastVisitedURL = getLastVisitedURL()
           if (lastVisitedURL) {
-              if (lastVisitedURL.includes('/login')){
+              if (lastVisitedURL.includes('/login') || lastVisitedURL === '/') {
                 router.push('/dashboard');
+              } else {
+                router.push(lastVisitedURL);
               }
-              router.push(lastVisitedURL);
           } else {
               router.push('/dashboard');
           }
@@ -100,7 +101,7 @@ const dismissNotifications = () => {
 
 <template>
   <LayoutGuest>
-    <SectionFullScreen v-slot="{ cardClass }" bg="purplePink">
+    <SectionFullScreen v-slot="{ cardClass }" bg="dark">
       <CardBox :class="cardClass" is-form @submit.prevent="submit">
         <NotificationBar v-if="notification" :color="notification.type" @close="authStore.resetNotification"  :dismissCallback="dismissNotifications">
         <b>{{ notification.message }}</b>

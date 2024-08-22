@@ -169,6 +169,7 @@ const checked = (isChecked, court) => {
       <th>N°</th>
       <th>Superficie</th>
       <th>Paredes</th>
+      <th>Cerramiento</th>
       <th />
     </tr>
   </thead>
@@ -187,6 +188,10 @@ const checked = (isChecked, court) => {
       <td data-label="Walls">
         {{ court.walls }}
       </td>
+      <td data-label="Enclosure">
+        {{ court.enclosure }}
+      </td>
+
       <td class="before:hidden lg:w-1 whitespace-nowrap">
         <!-- Adjust the buttons or actions based on your requirements -->
         <BaseButtons type="justify-start lg:justify-end" no-wrap>

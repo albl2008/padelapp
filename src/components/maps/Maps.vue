@@ -24,6 +24,10 @@ const props = defineProps({
   addressSaved : {
     type: String,
     default: null
+  },
+  light: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -33,8 +37,12 @@ watch(props, () => {
   if (props.locationSaved) {
     console.log(props.locationSaved)
     delete props.locationSaved.id
-    setMarker(props.locationSaved)
-    updateMapCenterAndZoom(props.locationSaved, 17);
+    const location = {
+      lat: props.locationSaved[1],
+      lng: props.locationSaved[0]
+    }
+    setMarker(location)
+    updateMapCenterAndZoom(location, 17);
   }
   if (props.addressSaved) {
     address.value = props.addressSaved
@@ -42,7 +50,7 @@ watch(props, () => {
 });
 
 const setMarker = (location) => {
-  debugger
+  
   if (marker) {
     marker.setPosition(location);
   } else {
@@ -256,7 +264,7 @@ const updateMapCenterAndZoom = (location, zoom) => {
 
   <div class="w-full h-96 mb-24">
     <div class="flex justify-center mb-4">
-      <input v-model="address" id="pac-input" ref="inputRef" class="controls" type="text" placeholder="Buscar" />
+      <input v-model="address" id="pac-input" ref="inputRef" :class="light ? 'lightControl' : 'controls'" type="text" placeholder="Buscar" />
     </div>
     
     <div id="map" ref="mapRef" style="width: 100%; height: 100%;"></div>
@@ -268,7 +276,7 @@ const updateMapCenterAndZoom = (location, zoom) => {
 <style>
   /* Style the search box */
   .controls {
-    border: 1px solid #334155;
+    border: 1px solid #334155 !important;
     border-radius: 2px 0 0 2px;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -276,7 +284,7 @@ const updateMapCenterAndZoom = (location, zoom) => {
     color: #fff;
     outline: none;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    background-color: #1e293b;
+    background-color: #1e293b !important;
     font-family: Roboto;
     font-size: 15px;
     font-weight: 300;
@@ -284,6 +292,25 @@ const updateMapCenterAndZoom = (location, zoom) => {
     width: 100%; /* Half of the width to center */
     z-index: 5;
   }
+
+  .lightControl {
+    border: 1px solid #334155;
+    border-radius: 2px 0 0 2px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    height: 46px;
+    color: #334155;
+    outline: none;
+    background-color: #fff;
+    font-family: Roboto;
+    font-size: 15px;
+    font-weight: 300;
+    text-overflow: ellipsis;
+    width: 100%; /* Half of the width to center */
+    z-index: 5;
+  }
+
+  
 
   
  

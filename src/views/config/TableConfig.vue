@@ -113,8 +113,11 @@ const configToEdit = async (config) => {
   const shifts = await getAllShifts();
   if (shifts.data.results.length > 0) {
     confirmationMessage.value = 'Se eliminaran los turnos si los hay. ¿Deseas continuar?'
+    isModalEdit.value = true;
+  } else {
+    router.push(`/edit-config/${configIdToEdit.value}`)
   }
-  isModalEdit.value = true;
+  
   
 };
 

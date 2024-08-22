@@ -35,13 +35,15 @@ const form = reactive({
   number: null,
   surface: '',
   walls: '',
+  enclosure: null
 })
 
 const touchedFields = reactive({
   name: false,
   number: false,
   surface: false,
-  walls: false
+  walls: false,
+  enclosure: false
 })
 
 
@@ -50,6 +52,7 @@ const schema = joi.object({
   number: joi.number().required(),
   surface: joi.string().valid('cemento').valid('sintetico').required(),
   walls: joi.string().valid('cemento').valid('blindex').required(),
+  enclosure: joi.string().valid('indoor').valid('exterior').valid('techada').required()
 });
 
 
@@ -81,7 +84,8 @@ const submit = async () => {
         name: form.name,
         number: form.number,
         surface: form.surface,
-        walls: form.walls
+        walls: form.walls,
+        enclosure: form.enclosure
     }
     if (isEditMode.value) {
       // If in edit mode, update the court
@@ -125,6 +129,8 @@ onMounted(async () => {
       form.number = courtDetails.data.number;
       form.surface = courtDetails.data.surface;
       form.walls = courtDetails.data.walls;
+      form.enclosure = courtDetails.data.enclosure;
+
       //form.inUse = courtDetails.data.inUse;
     } catch (error) {
       console.error('Error fetching court details:', error);
@@ -134,7 +140,7 @@ onMounted(async () => {
     await getCourts()
     await getConfig()
     form.number = getCourtNumber(courts.value, config.value)
-    form.name = 'C'+form.number
+    form.name = 'C '+form.number
   }
   
   
@@ -254,6 +260,17 @@ watch(form, (newForm) => {
     :class="{ 'border-red-500': touchedFields.walls && validateField('walls') }"
     :error="touchedFields.surface && validateField('surface')" 
     @change="touchedFields.walls = true"
+    required
+    
+  />
+</FormField>
+
+<FormField label="Cerramiento">
+  <FormCheckRadioGroup
+    v-model="form.enclosure"
+    name="cerramiento-radio"
+    type="radio"
+    :options="{ indoor: 'Indoor', exterior: 'Exterior', techada: 'Techada' }" 
     required
     
   />

@@ -52,7 +52,7 @@ const clubForm = reactive({
 const submit = async () => {
   
   try {
-
+    
     const body = {
     location: clubForm.location,
     address: clubForm.address,
@@ -97,8 +97,8 @@ onMounted(async() => {
         urlLogo.value = await getFile(clubDetails.data.logo)
       }
       debugger
-      clubForm.location = clubDetails.data.location;
-      locationValue.value = clubDetails.data.location
+      clubForm.location = clubDetails.data.location.coordinates;
+      locationValue.value = clubDetails.data.location.coordinates
       addressValue.value = clubDetails.data.address
       clubForm.address = clubDetails.data.address;
       clubForm.phone = clubDetails.data.phone;
@@ -113,13 +113,17 @@ onMounted(async() => {
   }
 })
 
-const setLocation = (lacation) => {
-  clubForm.location = lacation
+const setLocation = (location) => {
+  debugger
+  const locationFormatted = {
+    coordinates:  [location.lng, location.lat],
+  }
+  clubForm.location = locationFormatted
 }
 
 const setAddress = (address) => {
-  debugger
   clubForm.address = address
+  console.log(clubForm.address)
 }
 
 const getLocation = () => {
@@ -241,9 +245,7 @@ const submitPass = () => {
 
           <label class="block font-bold mb-2"> Ubicacion </label>
 
-          <Maps @location-selected="setLocation($event)" :locationSaved="getLocation()" :addressSaved="getAddress()" @address-selected="setAddress($event)"/>
-
-      
+          <Maps v-if="!isEditMode ? locationValue ? true : false : true" @location-selected="setLocation($event)" :locationSaved="isEditMode ? clubForm.location : getLocation()" :addressSaved="isEditMode ? clubForm.address : getAddress()" @address-selected="setAddress($event)"/>
 
           <template #footer>
             <BaseButtons>

@@ -12,6 +12,7 @@ export const useShiftsStore = defineStore({
       try {
         const response = await getAllShifts();
         this.setShifts(response.data.results);
+        return response.data.results
       } catch (error) {
         console.error('Error fetching shifts:', error);
       }

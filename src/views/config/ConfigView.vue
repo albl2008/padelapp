@@ -78,7 +78,7 @@ watch(notification, (newNotification) => {
           rounded-full
           small
         /> -->
-        <div v-if="clubActive && config.length > 0">
+        <div v-if="clubActive && config.length === 0">
           <BaseButton :icon="mdiPlus" label="Configuracion" color="primary" @click="createConfig" />
         </div>
         

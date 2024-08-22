@@ -12,7 +12,7 @@
   import EditConfirmation from '@/components/EditConfirmation.vue'
   import BaseButton from '@/components/BaseButton.vue';
   import BaseButtons from '@/components/BaseButtons.vue';
-  import { createShiftsMonth, getShiftsMonth } from '@/api/shifts'
+  import { createShiftsMonth, getShiftsMonth, getShiftsNextDays } from '@/api/shifts'
   import { useShiftsStore } from '@/stores/shifts';
   import dayjs from 'dayjs';
   import timezone from 'dayjs/plugin/timezone';
@@ -22,6 +22,11 @@
 import { Calendar } from '@fullcalendar/core'
 import { getAllConfig } from '@/api/config'
 import esLocale from '@fullcalendar/core/locales/es'
+import { Carousel, Navigation, Pagination, Slide } from 'vue3-carousel'
+import CardBoxTransaction from '@/components/CardBoxTransaction.vue'
+import FormField from '@/components/FormField.vue'
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -33,6 +38,7 @@ dayjs.tz.setDefault('UTC')
   const firstDayOfMonth = ref(null);
   const isDataLoaded = ref(false);
   const actualMonth = ref(null);
+  const isMobile = ref(window.innerWidth <= 768);
 
   const emit = defineEmits();
 
@@ -41,14 +47,19 @@ dayjs.tz.setDefault('UTC')
   const isModalDangerActive = ref(false);
   const shiftsOnClick = ref([]);
   const exists = ref(false)
+  const config = ref(null)
   const createMessage = ref('');
   const alertMessage = ref(null);
   const eventClicked = ref(null)
   const eventInfoTitle = ref('')
+  const shiftsMobile = ref([])
+  const today = ref(null)
+  firstDayOfMonth.value = dayjs().startOf('month');
+  actualMonth.value = firstDayOfMonth.value.format('MMMM', { locale: 'es' }); 
 
   const notification = computed(() => shiftsStore.notification);
   const handleDatesSet = async ({ view }) => {
-    debugger
+    
   // Update the current month when the view changes
   currentMonth.value = view.currentStart;
   const currentDate = dayjs(view.currentStart);
@@ -65,10 +76,9 @@ dayjs.tz.setDefault('UTC')
 };
 
 function titleTurno(number, dailyShifts){
-  const actualCase = number
-  switch (number) {
-      case actualCase: return `${number === 0 ? dailyShifts : number}° - `
-  }
+
+  return `${number === 0 ? dailyShifts : number}°`
+   
 }
 
   
@@ -81,15 +91,14 @@ function titleTurno(number, dailyShifts){
     locale: esLocale,
     datesSet: handleDatesSet,
     eventClick: handleEventClick,
-    dayMaxEventRows: 4,
-    moreLinkClick: 'popover',
+    dayMaxEvents: 3,
     moreLinkClick: handleMoreLinkClick,
     eventContent: function (info) {
-            var eventBackgroundColor = info.event.backgroundColor // Change to your desired background color
-            var eventTextColor = 'black'; // Change to your desired text color
+            let eventBackgroundColor = info.event.backgroundColor // Change to your desired background color
+            let eventTextColor = 'black'; // Change to your desired text color
           
             // Create the HTML structure with a rectangular background shape
-            var html =
+            let html =
               '<div class="overflow-hidden cursor-pointer w-full m-2" style="background-color: ' +
               eventBackgroundColor +
               '; color: ' +
@@ -99,10 +108,10 @@ function titleTurno(number, dailyShifts){
               '</div>';
           
             return { html: html };
-          },
+    },
 
     moreLinkContent: function(arg) {
-    return `+${arg.num} mas`; // customize the "view more" button text
+    return `+${arg.num} mas`; 
   }
   });
 
@@ -130,7 +139,8 @@ function titleTurno(number, dailyShifts){
   
   // Map the filtered shifts to events
   const events = filteredShifts.map((shift, index) => {
-    const shiftsByDay = getShiftsByDateAndHour(shift.date, new Date(shift.start).getHours());
+    const shiftsByDay = getShiftsByDateAndHour(shift.date, new Date(shift.start).getHours(), new Date(shift.start).getMinutes());
+    
     const lengthByDay = shiftsByDay.length
     const dailyShifts = config.shiftsPerDay
     let color = '#FFFFFF';
@@ -138,13 +148,9 @@ function titleTurno(number, dailyShifts){
     shiftNumber = shiftNumber + 1
     
     for (const shift of shiftsByDay) {
-      
       if (shift.status.id === 0){
         cont ++
       }
-      
-      
-     
     }
     shiftNumber = shiftNumber % dailyShifts
     
@@ -166,25 +172,55 @@ function titleTurno(number, dailyShifts){
         date: shift.date,
         start: shift.start,
         end: shift.end,
+        duration: shift.duration,
+        status: shift.status,
         tolerance: shift.tolerance,
         court: shift.court
       }
     };
   });
 
+  console.log(events)
+
   return events;
 };
 
+const checkDeviceType = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
 
 
-const getShiftsByDateAndHour = (date, hour) => {
+const renderShift = (shift) => {
+  let eventBackgroundColor = shift.color || "blue"; // Adjust color if needed
+      let eventTextColor = "black";
+      return `
+        <div
+          class="overflow-hidden cursor-pointer w-full m-2"
+          style="
+            background-color: ${eventBackgroundColor};
+            color: ${eventTextColor};
+            padding: 5px;
+            border-radius: 5px;
+            font-weight: bold;
+          "
+        >
+          ${shift.title} ${dayjs(shift.extendedProps.date).tz('UTC').format('DD-MM-YYYY')} ${dayjs(shift.start).tz('UTC').format('HH:mm')} 
+        </div>
+      `;
+}
+
+
+
+const getShiftsByDateAndHour = (date, hour, minutes) => {
+
   const shifts = shiftsStore.shifts;
   if (!shifts || shifts.length === 0) return [];
   
   // Filter shifts by date and hour
   return shifts.filter(shift => {
     const shiftHour = new Date(shift.start).getHours();
-    return shift.date === date && shiftHour === hour;
+    const shiftMinutes = new Date(shift.start).getMinutes();
+    return shift.date === date && shiftHour === hour && shiftMinutes === minutes;
   });
 };
 
@@ -196,7 +232,8 @@ function handleEventClick(eventInfo) {
   console.log(eventInfo.value)
   const clickedDate = eventInfo.event.extendedProps.date;
   const clickedHour = new Date(eventInfo.event.start).getHours();
-  const shiftsForDayAndHour = getShiftsByDateAndHour(clickedDate, clickedHour);
+  const clickedMinute = new Date(eventInfo.event.start).getMinutes();
+  const shiftsForDayAndHour = getShiftsByDateAndHour(clickedDate, clickedHour, clickedMinute);
 
   console.log('Shifts for the day and hour:', shiftsForDayAndHour);
 
@@ -207,6 +244,25 @@ function handleEventClick(eventInfo) {
   if (popover) {
     popover.style.display = 'none';
   }
+}
+
+
+function handleEventClickMobile(eventInfo) {
+  // Handle the event click here
+  console.log('Event clicked:', eventInfo);
+  eventClicked.value = eventInfo.extendedProps
+  eventInfoTitle.value = `Agendar turno ${dayjs(eventClicked.value.start).format('DD-MM-YYYY HH:mm')} - ${dayjs(eventClicked.value.end).format('HH:mm')}`
+  console.log(eventInfo)
+  const clickedDate = eventInfo.extendedProps.date;
+  const clickedHour = new Date(eventInfo.start).getHours();
+  const clickedMinute = new Date(eventInfo.start).getMinutes();
+  const shiftsForDayAndHour = getShiftsByDateAndHour(clickedDate, clickedHour, clickedMinute);
+
+  console.log('Shifts for the day and hour:', shiftsForDayAndHour);
+
+  isModalDangerActive.value = true;
+  shiftsOnClick.value = shiftsForDayAndHour
+
 }
 
 
@@ -236,6 +292,8 @@ watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShif
     let calendarInstance = null;
 
   try {
+    window.addEventListener('resize', checkDeviceType);
+    if (!isMobile.value) {
     calendarInstance = new Calendar(document.getElementById('calendar'), calendarOptions.value);
  
     // Fetch config data when the component is mounted
@@ -248,11 +306,49 @@ watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShif
       isDataLoaded.value = true;
     }
 
+  } else {
+    
+    isMobile.value = true;
+    today.value = dayjs();
+    config.value = await configStore.fetchConfig();
+    shiftsMobile.value = await shiftsStore.fetchShifts();
+    shiftsMobile.value = displayShifts()
+    shiftsMobile.value = getShiftsGroups(shiftsMobile.value, today.value)
+    console.log(configStore.config, shiftsMobile.value)
+  }
+
     await getAlertMessage()
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 });
+
+
+const getShiftsGroups = (shifts, day) => {
+  
+  const shiftMap = new Map();
+
+  // Iterate over shifts and add the first shift of each hour to the Map
+  const filteredShifts = shifts.filter(shift => {
+    const dateHour = `${shift.extendedProps.date}-${new Date(shift.start).getHours()}`;
+    if (!shiftMap.has(dateHour)) {
+      shiftMap.set(dateHour, true);
+      return true;
+    }
+    return false;
+  });
+
+  if (day){
+    
+    console.log(dayjs(day).format('DD-MM-YYYY'))
+    return filteredShifts.filter(shift => dayjs(shift.extendedProps.date).format('DD-MM-YYYY') === dayjs(day).format('DD-MM-YYYY'))
+  }
+
+  return filteredShifts;
+
+  
+  
+}
 
 function handleMoreLinkClick(arg) {
   const popover = document.querySelector('.fc-popover');
@@ -272,7 +368,7 @@ const confirmCreateTurnos = async () => {
     try {
 
       const config = configStore.config[0];
-      debugger
+      
 
       if (!config) {
         console.error('Config not available');
@@ -361,6 +457,18 @@ const getAlertMessage = async () => {
     console.error('Error fetching shifts:', error);
   }
 }
+const handleDate = (modelData) => {
+  
+  const allShifts = displayShifts();
+  shiftsMobile.value = getShiftsGroups(allShifts, dayjs(modelData))
+  today.value = dayjs(modelData)
+
+  
+}
+
+const convertToMinutes = (time) => {
+  return time * 60;
+}
 
   const createShifts = async () => {
   try {
@@ -422,10 +530,60 @@ const getAlertMessage = async () => {
         
 
         
-        <div id="calendar" class="calendar-container">
+        <div v-if="!isMobile" id="calendar" class="calendar-container">
           <FullCalendar :options='calendarOptions' />
         </div>
         
+        <div v-else>
+           
+           <div>
+            <FormField label="Ver dia" >
+              <VueDatePicker v-model="today" @update:model-value="handleDate" auto-apply date-picker :action-row="{ showNow: false, showPreview: false, showSelect: true}" dark></VueDatePicker>
+            </FormField>
+           </div>
+           
+           
+           <div v-if="config && shiftsMobile && shiftsMobile.length > 0" class="w-full mt-4 ">
+            
+        
+            <Carousel  v-if="shiftsMobile.length > 0">
+                <Slide v-for="court of config.courtsQuantity" :key="court">
+                    <div class="">
+                      <p class="text-2xl text-gray-500 dark:text-slate-400 mb-3"><span class="text-yellow-500">Cancha: {{ court }}</span></p>
+                        <div
+                            class="mb-3"
+                            v-if="shiftsMobile.length > 0"
+                            v-for="shift in shiftsMobile"
+                            :key="shift.id"
+                            @click="handleEventClickMobile(shift)"
+                            style="cursor: pointer;"
+                            
+                        >
+                        <div v-html="renderShift(shift)">
+
+                        </div>
+                            
+                            <!-- <CardBoxTransaction
+                                v-if="court === shift.extendedProps.court.number"
+                                :title="new Date(shift.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC'}) "
+                                :date="dayjs(shift.extendedProps.date).format('DD-MM-YYYY')"
+                                :business="convertToMinutes(shift.duration) + ' min'"
+                                :type="shift.extendedProps.status.sta"
+                                :name="shift.extendedProps.client ? shift.extendedProps.client : ''"
+                                :account="dayjs(shift.extendedProps.date).format('DD-MM-YYYY')"
+                            /> -->
+                        </div>
+                    </div>
+                </Slide>
+                <template #addons>
+                    <Navigation />
+                    <Pagination />
+                </template>
+            </Carousel>
+            
+        </div>
+        <div class="mt-12 text-center" v-if="shiftsMobile.length === 0"> No hay turnos el dia {{dayjs(today).format('DD-MM-YYYY')}}</div>
+        </div>
         
           <CardBoxModal v-model="isCreatingShifts" :has-cancel="false" title="Generar turnos">
             <GenerateShifts
@@ -604,6 +762,73 @@ const getAlertMessage = async () => {
 
 :deep(.fc-scrollgrid){
   border-color: #334155 !important;
+}
+
+
+:deep(.dp__theme_dark) {
+  --dp-background-color: #1e293b;
+  --dp-text-color: #ffffff;
+  --dp-hover-color: #334155;
+  --dp-hover-text-color: #ffffff;
+  --dp-hover-icon-color: #a0aec0;
+  --dp-primary-color: #005cb2;
+  --dp-primary-disabled-color: #61a8ea;
+  --dp-primary-text-color: #a9a9a9;
+  --dp-secondary-color: #a9a9a9;
+  --dp-border-color: #334155;
+  --dp-menu-border-color: #2d2d2d;
+  --dp-border-color-hover: #aaaeb7;
+  --dp-disabled-color: #737373;
+  --dp-disabled-color-text: #d0d0d0;
+  --dp-scroll-bar-background: #1e293b;
+  --dp-scroll-bar-color: #334155;
+  --dp-success-color: #00701a;
+  --dp-success-color-disabled: #428f59;
+  --dp-icon-color: #a0aec0;
+  --dp-danger-color: #e53935;
+  --dp-marker-color: #e53935;
+  --dp-tooltip-color: #3e3e3e;
+  --dp-highlight-color: rgba(0, 92, 178, 0.2);
+  --dp-range-between-dates-background-color: var(--dp-hover-color, #334155);
+  --dp-range-between-dates-text-color: var(--dp-hover-text-color, #ffffff);
+  --dp-range-between-border-color: var(--dp-hover-color, #ffffff);
+}
+
+:deep(.dp__theme_dark .dp__pointer),
+:deep(.dp__theme_dark .dp__icon),
+:deep(.dp__theme_dark .dp__button),
+:deep(.dp__theme_dark .dp__button:hover),
+:deep(.dp__theme_dark .dp__button_bottom),
+:deep(.dp__theme_dark .dp__flex),
+:deep(.dp__theme_dark .dp__btn),
+:deep(.dp__theme_dark .dp__main),
+:deep(.dp__theme_dark .dp__relative),
+:deep(.dp__theme_dark .dp--highlighted),
+:deep(.dp__theme_dark .dp--arrow-btn-nav) {
+  background-color: var(--dp-background-color) !important;
+  color: var(--dp-text-color) !important;
+  border-color: var(--dp-border-color) !important;
+}
+
+:deep(.dp__theme_dark .dp__input) {
+  padding-left: 50px;
+  height: 45px !important;
+}
+
+:deep(.dp__theme_dark .dp__icon) {
+  color: var(--dp-icon-color) !important;
+  border-left : 1px solid var(--dp-border-color) !important;
+  border-right: 1px solid var(--dp-border-color) !important;
+}
+
+:deep(.dp__theme_dark .dp__button:hover) {
+  background-color: var(--dp-hover-color) !important;
+  color: var(--dp-hover-icon-color) !important;
+}
+
+:deep(.dp__theme_dark .dp__highlighted),
+:deep(.dp__theme_dark .dp--highlighted) {
+  background-color: var(--dp-highlight-color) !important;
 }
 
 

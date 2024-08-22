@@ -14,7 +14,7 @@ import ForgotPasswordView from '@/views/auth/ForgotPasswordView.vue'
 const routes = [
   {
     meta: {
-      title: 'Select style'
+      title: 'Bienvenido'
     },
     path: '/',
     name: 'Home',
@@ -93,6 +93,14 @@ const routes = [
     path: '/courts',
     name: 'courts',
     component: () => import('@/views/courts/CourtsView.vue')
+  },
+  {
+    meta: {
+      title: 'Solicitudes'
+    },
+    path: '/requests',
+    name: 'requests',
+    component: () => import('@/views/requests/RequestsView.vue')
   },
   {
     meta: {

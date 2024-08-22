@@ -74,7 +74,7 @@ const dismissNotifications = () => {
 
 <template>
   <LayoutGuest>
-    <SectionFullScreen v-slot="{ cardClass }" bg="purplePink">
+    <SectionFullScreen v-slot="{ cardClass }" bg="dark">
       <CardBox :class="cardClass" is-form @submit.prevent="submit">
         <NotificationBar v-if="notification" :color="notification.type" @close="courtsStore.resetNotification()" :dismissCallback="dismissNotifications">
           <b>{{ notification.message }}</b>
@@ -115,8 +115,8 @@ const dismissNotifications = () => {
 
         <template #footer>
           <BaseButtons>
-            <BaseButton type="submit" color="info" label="Register" />
-            <BaseButton to="/dashboard" color="info" outline label="Back" />
+            <BaseButton type="submit" color="info" label="Registrarse" />
+            <BaseButton to="/" color="info" outline label="Volver" />
           </BaseButtons>
         </template>
       </CardBox>

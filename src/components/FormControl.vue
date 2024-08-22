@@ -2,6 +2,7 @@
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useMainStore } from '@/stores/main'
 import FormControlIcon from '@/components/FormControlIcon.vue'
+import { mdiEye, mdiEyeOff } from '@mdi/js';
 
 const props = defineProps({
   name: {
@@ -54,6 +55,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'setRef'])
 
+const showPassword = ref(false)
+
 const computedValue = computed({
   get: () => props.modelValue,
   set: (value) => {
@@ -78,6 +81,8 @@ const inputElClass = computed(() => {
   return base
 })
 
+
+
 const computedType = computed(() => (props.options ? 'select' : props.type))
 
 const controlIconH = computed(() => (props.type === 'textarea' ? 'h-full' : 'h-12'))
@@ -89,6 +94,13 @@ const selectEl = ref(null)
 const textareaEl = ref(null)
 
 const inputEl = ref(null)
+
+// Toggle password visibility
+const togglePasswordVisibility = () => {
+  const newType = computedType.value === 'password' ? 'text' : 'password';
+  showPassword.value = !showPassword.value
+  
+}
 
 onMounted(() => {
   if (selectEl.value) {
@@ -162,10 +174,40 @@ if (props.ctrlKFocus) {
       :autocomplete="autocomplete"
       :required="required"
       :placeholder="placeholder"
-      :type="computedType"
+      :type="computedType === 'password' ? (showPassword ? 'text' : 'password') : computedType"
       :class="inputElClass"
       :disabled="disabled"
     />
     <FormControlIcon v-if="icon" :icon="icon" :h="controlIconH" />
+    <button
+        v-if="computedType === 'password' || (showPassword && computedType === 'text')"
+        type="button"
+        class="absolute inset-y-0 pl-10 mt-4 right-0 pr-3 flex items-center text-gray-500"
+        @click="togglePasswordVisibility"
+      >
+        <span v-if="computedType === 'password' && !showPassword">
+          <FormControlIcon :icon="mdiEyeOff" />
+        </span>
+        <span v-else>
+          <FormControlIcon :icon="mdiEye" />
+        </span>
+    </button>
   </div>
 </template>
+
+
+<style scoped>
+/* Add your styles here */
+.form-control {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+</style>

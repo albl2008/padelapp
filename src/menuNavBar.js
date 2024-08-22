@@ -18,7 +18,6 @@ export default function useMenuNavBar() {
   const notificationsArray = ref([])
 
   watch(notifications, () => {
-    debugger
     notifications.value = notifications
   })
 
