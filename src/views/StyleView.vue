@@ -188,7 +188,7 @@ const login = () => {
             </div>
 
 
-            <div class="flex justify-center grid grid-cols-2 gap-6">
+            <div class="flex justify-center grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField label="Tu nombre">
                 <FormControl
                   v-model="form.displayName"

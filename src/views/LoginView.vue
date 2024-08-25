@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, computed, watch, onMounted} from 'vue'
 import { useRouter } from 'vue-router'
-import { mdiAccount, mdiAsterisk } from '@mdi/js'
+import { mdiAccount, mdiAsterisk, mdiHome } from '@mdi/js'
 import SectionFullScreen from '@/components/SectionFullScreen.vue'
 import CardBox from '@/components/CardBox.vue'
 import FormCheckRadio from '@/components/FormCheckRadio.vue'
@@ -14,6 +14,8 @@ import LayoutGuest from '@/layouts/LayoutGuest.vue'
 import { useAuthStore } from '@/stores/auth'
 import { getLastVisitedURL, setLastVisitedURL } from '@/api/interceptor'
 import { useNotificationStore } from '@/stores/notifications'
+import { gradientBgDark } from '@/colors'
+import SectionMain from '@/components/SectionMain.vue'
 
 const form = reactive({
   email: '',
@@ -35,6 +37,10 @@ watch(notification, (newNotification) => {
   }
   
 });
+
+const home = () => {
+  router.push('/')
+}
 
 onMounted(  () => {
    if (isLoggedIn.value) {
@@ -100,8 +106,27 @@ const dismissNotifications = () => {
 </script>
 
 <template>
-  <LayoutGuest>
+  <LayoutGuest :class="gradientBgDark">
+    <SectionMain>
+      <div class="w-full h-full items-center justify-center">
+        <nav class="flex justify-between">
+          <img
+            :src="'/favicon.png'"
+            class="w-12 md:w-12 h-12 md:h-12"
+          />
+          <div class="">
+            <BaseButton class="mr-3" :icon="mdiHome" label="Home" @click="home" />
+            <!-- <BaseButton  :icon="mdiLogin" label="Registrarse" @click="register" /> -->
+          </div>
+         
+        </nav>
+      </div>
+    </SectionMain>
+    
+      
+      
     <SectionFullScreen v-slot="{ cardClass }" bg="dark">
+      
       <CardBox :class="cardClass" is-form @submit.prevent="submit">
         <NotificationBar v-if="notification" :color="notification.type" @close="authStore.resetNotification"  :dismissCallback="dismissNotifications">
         <b>{{ notification.message }}</b>
@@ -136,10 +161,12 @@ const dismissNotifications = () => {
           <BaseButtons>
             <BaseButton type="submit" color="info" label="Login" />
             <BaseButton to="/forgot-password" color="info" outline label="Forgot Password" />
-            <BaseButton to="/register" color="info" outline label="Register" />
+            <!-- <BaseButton to="/register" color="info" outline label="Register" /> -->
           </BaseButtons>
         </template>
       </CardBox>
     </SectionFullScreen>
+    
   </LayoutGuest>
+  
 </template>

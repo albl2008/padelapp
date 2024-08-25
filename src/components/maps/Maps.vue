@@ -50,7 +50,7 @@ watch(props, () => {
 });
 
 const setMarker = (location) => {
-  
+  debugger
   if (marker) {
     marker.setPosition(location);
   } else {
@@ -194,7 +194,7 @@ const initMap = () => {
   
   autocomplete.addListener('place_changed', () => {
     const place = autocomplete.getPlace();
-    debugger
+    
     address.value = place.formatted_address;
     if (!place.geometry || !place.geometry.location) {
       console.log("No details available for input: '" + place.name + "'");
@@ -225,7 +225,7 @@ const initMap = () => {
       emit('address-selected', address.value);
 
     } else {
-
+      debugger
       setMarker(place.geometry.location)
       
       

@@ -103,7 +103,7 @@ function titleTurno(number, dailyShifts){
               eventBackgroundColor +
               '; color: ' +
               eventTextColor +
-              '; padding: 5px; border-radius: 5px; font-weight: bold;">' + info.event.title +
+              '; padding: 5px; border-radius: 5px; font-weight: bold;">' + info.event.title + ' - ' +
               dayjs(info.event.start).tz('UTC').format('HH:mm') +
               '</div>';
           
@@ -162,6 +162,7 @@ function titleTurno(number, dailyShifts){
     } else if (cont === 0){
       color = '#FF0000'
     }
+    
     return {
       title: `${titleTurno(shiftNumber,dailyShifts)}`,
       color: color,
@@ -178,9 +179,13 @@ function titleTurno(number, dailyShifts){
         court: shift.court
       }
     };
+    
   });
 
   console.log(events)
+
+  
+  
 
   return events;
 };
@@ -291,13 +296,18 @@ watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShif
 
     let calendarInstance = null;
 
+    config.value = await configStore.fetchConfig();
+    if (!config.value) {
+      shiftsStore.setNotification({ message: 'Por favor, cree una configuración', type: 'warning' })
+    }
+
   try {
     window.addEventListener('resize', checkDeviceType);
     if (!isMobile.value) {
     calendarInstance = new Calendar(document.getElementById('calendar'), calendarOptions.value);
  
     // Fetch config data when the component is mounted
-    await configStore.fetchConfig();
+    
     await shiftsStore.fetchShifts();
 
     // Check if both config and shifts data are available
@@ -310,7 +320,7 @@ watch([() => configStore.config, () => shiftsStore.shifts], ([newConfig, newShif
     
     isMobile.value = true;
     today.value = dayjs();
-    config.value = await configStore.fetchConfig();
+    
     shiftsMobile.value = await shiftsStore.fetchShifts();
     shiftsMobile.value = displayShifts()
     shiftsMobile.value = getShiftsGroups(shiftsMobile.value, today.value)
